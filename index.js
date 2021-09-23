@@ -23,7 +23,7 @@ if (!fs.existsSync('./subscriptions.json')) {
 
 client.once('ready', () => {
 	console.log('Ready!');
-	stalk.stalk();
+	stalk.closestNotification();
 });
 
 client.on('interactionCreate', async interaction => {

@@ -9,6 +9,7 @@ var times = JSON.parse(fs.readFileSync("./times.json", "UTF8"));
 var nextLesson;
 
 module.exports.stalk = stalk;
+module.exports.closestNotification = closestNotification;
 
 async function stalk() {
   var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
@@ -30,7 +31,7 @@ async function stalk() {
     var user = await module.exports.client.users.fetch(subInfo.userID);
     console.log(user);
     var day = rozvrhy[subInfo.className]
-      .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(-1))
+      .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(0))
       .filter(utils.filterGroups(subInfo.groups))
       .filter(atom => atom.period == nextLesson);
 
