@@ -29,16 +29,16 @@ async function stalk() {
   for (var i = 0; i < save.subscriptions.length; i++) {
     var subInfo = save.subscriptions[i];
     var user = await module.exports.client.users.fetch(subInfo.userID);
-    console.log(user);
     var day = rozvrhy[subInfo.className]
       .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(0))
       .filter(utils.filterGroups(subInfo.groups))
       .filter(atom => atom.period == nextLesson);
 
+
     for (var j = 0; j < day.length; j++) {
       var lesson = day[j];
       const lukMomIhaveEmbed = new MessageEmbed()
-        .setColor('#0099ff')
+        .setColor(lesson.change?'#ff3300':'#0099ff')
         .setTitle(subInfo.label)
         .setDescription(`${lesson.beginTime} - ${lesson.endTime} | ${lesson.room}\n${lesson.subjectName}${lesson.group?` | ${lesson.group}`:``}\n${lesson.teacher}`)
 
