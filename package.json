@@ -1,0 +1,23 @@
+{
+  "name": "bakalariStalkinBot",
+  "version": "1.0.0",
+  "description": "Stalking skill intensifies 😏",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/smartyfeed/bakalaristalkinbot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/smartyfeed/bakalaristalkinbot/issues"
+  },
+  "homepage": "https://gitlab.com/smartyfeed/bakalaristalkinbot#readme",
+  "dependencies": {
+    "discord.js": "^13.1.0"
+  }
+}
