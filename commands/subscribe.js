@@ -15,7 +15,10 @@ module.exports = {
     .addStringOption(option => option.setName('label').setDescription('Your "genius" label').setRequired(false)),
   async execute(interaction) {
     const className = interaction.options.getString('class').toUpperCase();
-    const groups = interaction.options.getString('groups')?.split(" ").filter(a => a).sort() || [];
+    const groups = interaction.options.getString('groups')?.split(" ")
+      .filter(a => a)
+      .sort()
+      .filter((v, i, self) => self.indexOf(v) === i) || [];
     const label = interaction.options.getString('label') || className;
 
     if (!generic.getClassInfo(className)) {
