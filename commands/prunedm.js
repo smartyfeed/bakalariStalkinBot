@@ -23,7 +23,10 @@ module.exports = {
     });
 
     messages.forEach((message) => {
-      message.delete()
+      try {
+        message.delete()
+      } catch (e) {}
+
     });
 
     return interaction.reply({
