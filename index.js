@@ -1,11 +1,13 @@
 require('./bakalariStalkin/util/updateClassIDs.js');
 
+const stalk = require('./stalk.js');
 const fs = require('fs');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const { Client, Collection, Intents } = require('discord.js');
 const { token } = require('./config.json');
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+stalk.client = client;
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -16,11 +18,12 @@ for (const file of commandFiles) {
 }
 
 if (!fs.existsSync('./subscriptions.json')) {
-  fs.writeFileSync('./subscriptions.json', JSON.stringify({subscriptions:[]}));
+	fs.writeFileSync('./subscriptions.json', JSON.stringify({ subscriptions:[] }));
 }
 
 client.once('ready', () => {
 	console.log('Ready!');
+	stalk.stalk();
 });
 
 client.on('interactionCreate', async interaction => {
@@ -37,5 +40,7 @@ client.on('interactionCreate', async interaction => {
 		return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
+
+
 
 client.login(token);

@@ -1,0 +1,54 @@
+[
+    {
+      "sequence": 0,
+      "endtime": "7:45"
+    },
+    {
+      "sequence": 1,
+      "endtime": "8:45"
+    },
+    {
+      "sequence": 2,
+      "endtime": "9:40"
+    },
+    {
+      "sequence": 3,
+      "endtime": "10:45"
+    },
+    {
+      "sequence": 4,
+      "endtime": "11:40"
+    },
+    {
+      "sequence": 5,
+      "endtime": "12:35"
+    },
+    {
+      "sequence": 6,
+      "endtime": "13:30"
+    },
+    {
+      "sequence": 7,
+      "endtime": "14:25"
+    },
+    {
+      "sequence": 8,
+      "endtime": "15:20"
+    },
+    {
+      "sequence": 9,
+      "endtime": "16:15"
+    },
+    {
+      "sequence": 10,
+      "endtime": "17:10"
+    },
+    {
+      "sequence": 11,
+      "endtime": "18:05"
+    },
+    {
+      "sequence": 12,
+      "endtime": "19:00"
+    }
+  ]

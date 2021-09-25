@@ -1,5 +1,4 @@
 const cli = require('cli');
-const cliui = require('cliui');
 const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
