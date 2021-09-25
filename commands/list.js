@@ -12,7 +12,8 @@ module.exports = {
   async execute(interaction) {
     const owner = interaction.user.id;
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
-    var activeSubs = save.subscriptions.filter(entry => entry.userID);
+    var activeSubs = save.subscriptions.filter(entry => entry.userID === owner);
+    if (activeSubs.length === 0) return interaction.reply(`No active sessions registered for ${interaction.user.username}`);
     var info = activeSubs.map(entry => `**${entry.label}** | ${entry.className} ${entry.groups}`)
                          .join('\n');
     return interaction.reply(info);
