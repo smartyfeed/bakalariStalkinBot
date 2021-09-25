@@ -42,7 +42,7 @@ module.exports = {
     var index = save.subscriptions.findIndex(entry => entry.userID === interaction.user.id && entry.className === className && entry.groups.join(' ') === groups.join(' '));
 
     if (index != -1) {
-      return interaction.reply(`Active stalking session for ${className} ${groups} already exists! | Label: ${label}`);
+      return interaction.reply(`Active stalking session for ${className} ${groups} already exists! | Label: ${save.subscriptions[index].label}`);
     }
 
     save.subscriptions.push(entry);
