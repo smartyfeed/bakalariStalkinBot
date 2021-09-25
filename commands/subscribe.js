@@ -23,12 +23,12 @@ module.exports = {
 
     if (!generic.getClassInfo(className)) {
       cli.error(`Incorrect class (${className}) entered by ${interaction.user.username} | ${interaction.user.id}`)
-      return interaction.reply(`Incorrect class: ${className}`);
+      return interaction.reply({ content: `Incorrect class: ${className}`, ephemeral: true });
     }
     for (var i = 0; i < groups.length; i++) {
       if (!/^[1-4].sk$/.test(groups[i])) {
         cli.error(`Incorrect group (${groups[i]}) entered by ${interaction.user.username} | ${interaction.user.id}`)
-        return interaction.reply(`Incorrect group: ${groups[i]}`);
+        return interaction.reply({ content: `Incorrect group: ${groups[i]}`, ephemeral: true });
       }
     }
     var entry = {
@@ -42,12 +42,12 @@ module.exports = {
     var index = save.subscriptions.findIndex(entry => entry.userID === interaction.user.id && entry.className === className && entry.groups.join(' ') === groups.join(' '));
 
     if (index != -1) {
-      return interaction.reply(`Active stalking session for ${className} ${groups} already exists! | Label: ${save.subscriptions[index].label}`);
+      return interaction.reply({ content: `Active stalking session for ${className} ${groups} already exists! | Label: ${save.subscriptions[index].label}`, ephemeral: true });
     }
 
     save.subscriptions.push(entry);
     fs.writeFileSync("./subscriptions.json", JSON.stringify(save, null, 2));
     cli.ok(`${interaction.user.username} started stalking ${className} ${groups} | ID: ${interaction.user.id}`)
-    return interaction.reply(`Successfully started stalking! :sunglasses:`);
+    return interaction.reply({ content: `Successfully started stalking! :sunglasses:`, ephemeral: true });
   },
 };

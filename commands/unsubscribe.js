@@ -17,12 +17,12 @@ module.exports = {
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
     var index = save.subscriptions.findIndex(entry => entry.userID === owner && entry.label === label);
     if (index == -1) {
-      return interaction.reply(`Could not find an active subscription with this label`);
+      return interaction.reply({ content: `Could not find an active subscription with this label`, ephemeral: true });
     }
 
     var [info] = save.subscriptions.splice(index, 1);
     fs.writeFileSync("./subscriptions.json", JSON.stringify(save, null, 2));
     cli.ok(`${interaction.user.username} stopped stalking ${info.className} ${info.groups} | ID: ${interaction.user.id}`)
-    return interaction.reply(`Successfully unsubscribed! What a shame! :chicken:`);
+    return interaction.reply({ content: `Successfully unsubscribed! What a shame! :chicken:`, ephemeral: true });
   },
 };
