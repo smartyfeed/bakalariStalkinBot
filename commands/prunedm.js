@@ -22,9 +22,9 @@ module.exports = {
       limit: amount
     });
 
-    messages.forEach((message) => {
+    messages.forEach(async (message) => {
       try {
-        message.delete()
+        await message.delete()
       } catch (e) {}
 
     });
