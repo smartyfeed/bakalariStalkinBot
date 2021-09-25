@@ -15,7 +15,7 @@ module.exports = {
     .addStringOption(option => option.setName('label').setDescription('Your "genius" label').setRequired(false)),
   async execute(interaction) {
     const className = interaction.options.getString('class').toUpperCase();
-    const groups = interaction.options.getString('groups')?.split(" ").filter(a => a) || [];
+    const groups = interaction.options.getString('groups')?.split(" ").filter(a => a).sort() || [];
     const label = interaction.options.getString('label') || className;
 
     if (!generic.getClassInfo(className)) {
@@ -34,7 +34,14 @@ module.exports = {
       groups,
       label,
     };
+
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
+    var index = save.subscriptions.findIndex(entry => entry.userID === interaction.user.id && entry.className === className && entry.groups.join(' ') === groups.join(' '));
+
+    if (index != -1) {
+      return interaction.reply(`Active stalking session for ${className} ${groups} already exists! | Label: ${label}`);
+    }
+
     save.subscriptions.push(entry);
     fs.writeFileSync("./subscriptions.json", JSON.stringify(save, null, 2));
     cli.ok(`${interaction.user.username} started stalking ${className} ${groups} | ID: ${interaction.user.id}`)
