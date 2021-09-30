@@ -44,7 +44,7 @@ module.exports = {
     }
     var rozvrh = await getTT(utils.getClassInfo(className).id);
     var day = rozvrh
-      .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(offset?offset:0))
+      .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(offset ? offset : 0))
       .filter(utils.filterGroups(groups));
 
     const lukMomIhaveTTEmbed = new MessageEmbed()
@@ -56,13 +56,13 @@ module.exports = {
 
       if (lesson.length == 1) {
         lukMomIhaveTTEmbed.addField(
-          `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`, 
-`${lesson[0].subjectName} | ${lesson[0].room}
+          `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`,
+          `${lesson[0].subjectName} | ${lesson[0].room}
 ${lesson[0].teacher}`, false);
       } else if (lesson.length == 2) {
         lukMomIhaveTTEmbed.addField(
           `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`,
-`**${lesson[0].group}** - ${lesson[0].subjectName} | ${lesson[0].room}
+          `**${lesson[0].group}** - ${lesson[0].subjectName} | ${lesson[0].room}
 ${lesson[0].teacher}
 **${lesson[1].group}** - ${lesson[1].subjectName} | ${lesson[1].room}
 ${lesson[1].teacher}`, false);
