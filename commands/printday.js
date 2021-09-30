@@ -53,9 +53,17 @@ module.exports = {
       var lesson = day.filter(atom => atom.period == j);
 
       if (lesson.length == 1) {
-        lukMomIhaveTTEmbed.addField(`${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`, `${lesson[0].subjectName} | ${lesson[0].room}\n${lesson[0].teacher}`, false);
+        lukMomIhaveTTEmbed.addField(
+          `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`, 
+`${lesson[0].subjectName} | ${lesson[0].room}
+${lesson[0].teacher}`, false);
       } else if (lesson.length == 2) {
-        lukMomIhaveTTEmbed.addField(`${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`, `**${lesson[0].group}** - ${lesson[0].subjectName} | ${lesson[0].room}\n${lesson[0].teacher}\n**${lesson[1].group}** - ${lesson[1].subjectName} | ${lesson[1].room}\n${lesson[1].teacher}`, false);
+        lukMomIhaveTTEmbed.addField(
+          `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`,
+`**${lesson[0].group}** - ${lesson[0].subjectName} | ${lesson[0].room}
+${lesson[0].teacher}
+**${lesson[1].group}** - ${lesson[1].subjectName} | ${lesson[1].room}
+${lesson[1].teacher}`, false);
       }
 
     }
