@@ -68,5 +68,5 @@ function closestNotification() {
       return;
     }
   }
-  setTimeout(closestNotification, 5 * 60 * 60 * 1000);
+  setTimeout(closestNotification, 6 * 60 * 60 * 1000);
 }
