@@ -38,7 +38,7 @@ async function stalk() {
     for (var j = 0; j < day.length; j++) {
       var lesson = day[j];
       const lukMomIhaveEmbed = new MessageEmbed()
-        .setColor(lesson.change?'#ff3300':'#0099ff')
+        .setColor(lesson.changeinfo !== ""?'#ff3300':'#0099ff')
         .setTitle(subInfo.label)
         .setDescription(`${lesson.beginTime} - ${lesson.endTime} | ${lesson.room}\n${lesson.subjectName}${lesson.group?` | ${lesson.group}`:``}\n${lesson.teacher}`)
 
