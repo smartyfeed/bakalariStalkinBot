@@ -11,6 +11,9 @@ const {
 const {
   token
 } = require('./config.json');
+const { 
+  joinVoiceChannel
+} = require('@discordjs/voice');
 
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS]
@@ -31,7 +34,7 @@ if (!fs.existsSync('./subscriptions.json')) {
   }));
 }
 
-client.once('ready', () => {
+client.once('ready', async () => {
   console.log('Ready!');
   client.user.setPresence({
     activities: [{
@@ -41,6 +44,15 @@ client.once('ready', () => {
     status: 'online'
   });
   stalk.closestNotification();
+  
+  
+  var vcAFK = await client.channels.fetch("833015404498386964");
+  
+  const connection = joinVoiceChannel({
+  	channelId: vcAFK.id,
+  	guildId: vcAFK.guild.id,
+  	adapterCreator: vcAFK.guild.voiceAdapterCreator,
+  });
 });
 
 client.on('interactionCreate', async interaction => {
