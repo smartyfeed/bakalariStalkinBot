@@ -59,7 +59,7 @@ module.exports = {
       for (var item of lesson) {
         contents += `${item.group?`**${item.group} -** `:""}${item.subjectName} | ${item.room}\n${item.teacher}\n`;
 	  }
-	  lukMomIhaveTTEmbed.addField(contents, false);
+	  lukMomIhaveTTEmbed.addField(titulek, contents, false);
     }
     cli.ok(`${interaction.user.username} looked for ${className} ${groups?`${groups} `:""}timetable | ID: ${interaction.user.id}`)
     return interaction.reply({
