@@ -19,7 +19,7 @@ module.exports = {
     await interaction.user.send('This will be deleted in the future');
 
     var messages = await interaction.user.dmChannel.messages.fetch({
-      limit: amount
+      limit: amount + 1
     });
 
     messages.forEach(async (message) => {
