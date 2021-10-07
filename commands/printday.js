@@ -53,21 +53,13 @@ module.exports = {
 
     for (var j = 1; j <= 12; j++) {
       var lesson = day.filter(atom => atom.period == j);
-
-      if (lesson.length == 1) {
-        lukMomIhaveTTEmbed.addField(
-          `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`,
-          `${lesson[0].subjectName} | ${lesson[0].room}
-${lesson[0].teacher}`, false);
-      } else if (lesson.length == 2) {
-        lukMomIhaveTTEmbed.addField(
-          `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`,
-          `**${lesson[0].group}** - ${lesson[0].subjectName} | ${lesson[0].room}
-${lesson[0].teacher}
-**${lesson[1].group}** - ${lesson[1].subjectName} | ${lesson[1].room}
-${lesson[1].teacher}`, false);
-      }
-
+      if(lesson.length == 0) continue;
+	  var contents = "";
+	  var titulek = `${lesson[0].period} | ${lesson[0].beginTime} - ${lesson[0].endTime}`
+      for (var item of lesson) {
+        contents += `${item.group?`**${item.group} -** `:""}${item.subjectName} | ${item.room}\n${item.teacher}\n`;
+	  }
+	  lukMomIhaveTTEmbed.addField(contents, false);
     }
     cli.ok(`${interaction.user.username} looked for ${className} ${groups?`${groups} `:""}timetable | ID: ${interaction.user.id}`)
     return interaction.reply({
