@@ -11,7 +11,7 @@ const {
 const {
   token
 } = require('./config.json');
-const { 
+const {
   joinVoiceChannel
 } = require('@discordjs/voice');
 
@@ -44,15 +44,15 @@ client.once('ready', async () => {
     status: 'online'
   });
   stalk.closestNotification();
-  
-  
-  var vcAFK = await client.channels.fetch("833015404498386964");
-  
+
+
+  /*var vcAFK = await client.channels.fetch("833015404498386964");
+
   const connection = joinVoiceChannel({
   	channelId: vcAFK.id,
   	guildId: vcAFK.guild.id,
   	adapterCreator: vcAFK.guild.voiceAdapterCreator,
-  });
+  });*/
 });
 
 client.on('interactionCreate', async interaction => {
