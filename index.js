@@ -19,6 +19,7 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS]
 });
 stalk.client = client;
+module.exports.client = client;
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
