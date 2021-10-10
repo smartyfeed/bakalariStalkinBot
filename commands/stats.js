@@ -28,7 +28,7 @@ module.exports = {
       var user = await index.client.users.fetch(stalkerID);
       output += `\n- ${user.username}#${user.discriminator}\n`
       for (var i = 0; i < subs.length; i++) {
-        output += `+ ${subs[i].className} ${subs[i].groups} ${subs[i].label?` - ${subs[i].label}`:''}\n`
+        output += `+ ${subs[i].className} ${subs[i].groups?subs[i].groups:''} ${subs[i].label?` - ${subs[i].label}`:''}\n`
       }
     }
     output += '```';
