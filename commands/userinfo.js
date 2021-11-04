@@ -13,18 +13,21 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('userinfo')
     .setDescription('Show user info')
-    .addStringOption(option => option.setName('id').setDescription('User ID').setRequired(false)),
+    .addStringOption(option => option.setName('id').setDescription('User ID').setRequired(false))
+    .addUserOption(option => option.setName('user').setDescription('Required user').setRequired(false)),
   async execute(interaction) {
     try {
       var ID = interaction.options.getString('id');
-      var userID = ID ? ID : interaction.user.id;
-      var user = await module.exports.client.users.fetch(userID);
+      var USER = interaction.options.getUser('user');
+
+      var userID = ID || USER?.id || interaction.user.id;
+      var user =  await module.exports.client.users.fetch(userID);
 
       if (!user.dmChannel) {
         try {
           await user.createDM();
         } catch (e) {
-          console.log('Failed to create userDM channel')
+          cli.error(`Failed to create userDM channel with ${user.tag} | bot: ${user.bot}`);
         }
       }
 
