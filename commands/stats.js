@@ -5,8 +5,6 @@ const {
 } = require('@discordjs/builders');
 const fs = require('fs');
 
-const index = require('../index.js');
-
 module.exports = {
   hidden: true,
   data: new SlashCommandBuilder()
@@ -25,7 +23,7 @@ module.exports = {
     var output = '```diff'
     for (var stalkerID in stalkers) {
       var subs = stalkers[stalkerID];
-      var user = await index.client.users.fetch(stalkerID);
+      var user = await module.exports.client.users.fetch(stalkerID);
       output += `\n- ${user.username}#${user.discriminator}\n`
       for (var i = 0; i < subs.length; i++) {
         output += `+ ${subs[i].className} ${subs[i].groups?subs[i].groups:''} ${subs[i].label?` - ${subs[i].label}`:''}\n`
