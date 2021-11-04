@@ -1,4 +1,5 @@
 const fs = require('fs');
+const cli = require('cli');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const utils = require('./bakalariStalkin/util/generic.js');
 const {
@@ -41,10 +42,15 @@ async function stalk() {
         .setColor(lesson.changeinfo !== ""?'#ff3300':'#0099ff')
         .setTitle(subInfo.label)
         .setDescription(`${lesson.beginTime} - ${lesson.endTime} | ${lesson.room}\n${lesson.subjectName}${lesson.group?` | ${lesson.group}`:``}\n${lesson.teacher}`)
-
-      user.send({
-        embeds: [lukMomIhaveEmbed]
-      });
+      try {
+        await user.send({
+          embeds: [lukMomIhaveEmbed]
+        });
+        cli.ok(`Sent notification "${subInfo.label}" to user ${user?.displayName} ( <@${subInfo.userID}> )`);
+      } catch(e) {
+        cli.error(`Sending notification to user ${user?.displayName} ( <@${subInfo.userID}> ) failed:
+    ${e.message}`);
+      }
     }
   }
   closestNotification();
