@@ -10,7 +10,6 @@ const {
 } = require('discord.js');
 
 module.exports = {
-  hidden: true,
   data: new SlashCommandBuilder()
     .setName('userinfo')
     .setDescription('Show user info')
