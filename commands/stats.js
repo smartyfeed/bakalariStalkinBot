@@ -11,6 +11,12 @@ module.exports = {
     .setName('stats')
     .setDescription('Show ALL stalking sessions'),
   async execute(interaction) {
+    if(!module.exports.client.application.owner.members?.find(member => member.user.id == interaction.user.id))
+      return interaction.reply({
+            content: "You can not use this command",
+            ephemeral: true
+          });
+  
     var stalkers = {};
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
 
