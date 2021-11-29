@@ -35,7 +35,7 @@ module.exports = {
       userID: interaction.user.id,
       className,
       groups,
-      label,
+      label
     };
 
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));

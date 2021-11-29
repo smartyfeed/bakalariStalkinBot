@@ -29,6 +29,9 @@ async function stalk() {
 
   for (var i = 0; i < save.subscriptions.length; i++) {
     var subInfo = save.subscriptions[i];
+    if (subInfo.pausedUntil && subInfo.pausedUntil >= Math.floor((new Date()).getTime() / 1000)) {
+      continue;
+    }
     var user = await module.exports.client.users.fetch(subInfo.userID);
     var day = rozvrhy[subInfo.className]
       .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(0))
