@@ -17,12 +17,12 @@ module.exports = {
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
     var subs = save;
 
-    /*if (interaction.inGuild()) {
+    if (interaction.inGuild()) {
       return interaction.reply({
         content: `Please use the command in DM channel with the bot`,
         ephemeral: true
       });
-    }*/
+    }
 
     if (save.subscriptions.findIndex(entry => entry.userID === user) == -1) {
       return interaction.reply({
