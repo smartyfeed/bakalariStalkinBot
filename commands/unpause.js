@@ -6,27 +6,23 @@ const fs = require('fs');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('pause')
-    .setDescription('Pause all notifications for a specific time (you can specify label)')
-    .addStringOption(option => option.setName('duration').setDescription('Duration of pause (for example 13m, 3h, 7d)').setRequired(true))
+    .setName('unpause')
+    .setDescription('Unpause all notifications (you can specify label)')
     .addStringOption(option => option.setName('label').setDescription('Subscription label').setRequired(false)),
   async execute(interaction) {
-    var duration = interaction.options.getString('duration');
-    var offset;
-    var interval;
-    var output = '```Paused ';
+    var output = '```Unpaused ';
     const label = interaction.options.getString('label');
     const user = interaction.user.id;
 
     var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
     var subs = save;
 
-    if (interaction.inGuild()) {
+    /*if (interaction.inGuild()) {
       return interaction.reply({
         content: `Please use the command in DM channel with the bot`,
         ephemeral: true
       });
-    }
+    }*/
 
     if (save.subscriptions.findIndex(entry => entry.userID === user) == -1) {
       return interaction.reply({
@@ -47,55 +43,26 @@ module.exports = {
       });
     }
 
-    if (!/^[0-9]+[mhdMHD]$/.test(duration)) {
-      cli.error(`Incorrect duration (${duration}) entered by ${interaction.user.username} | ${interaction.user.id}`)
-      return interaction.reply({
-        content: `Incorrect duration: ${duration}`,
-        ephemeral: true
-      });
-    } else {
-      duration = duration.split(/([0-9]+)(\D)/);
-      duration.shift();
-      duration.pop();
-
-      switch (duration[1]) {
-        case "m":
-        case "M":
-          offset = duration[0] * 60;
-          interval = "minute";
-          break;
-        case "h":
-        case "H":
-          offset = duration[0] * 3600;
-          interval = "hour";
-          break;
-        case "d":
-        case "D":
-          offset = duration[0] * 86400;
-          interval = "day";
-      }
-    }
-
     if (label === null) {
       for (var sub of subs.subscriptions) {
         if (sub.userID == user) {
-          sub.pausedUntil = new Date().getTime() + (offset * 1000);
+          sub.pausedUntil = 0;
         }
       }
       output += 'all ';
-      cli.ok(`${interaction.user.username} paused all notifications for ${duration[0]} ${interval}(s) | ID: ${interaction.user.id}`);
+      cli.ok(`${interaction.user.username} unpaused all notifications | ID: ${interaction.user.id}`);
     } else {
       for (var sub of subs.subscriptions) {
         if (sub.userID == user && sub.label == label) {
-          sub.pausedUntil = new Date().getTime() + (offset * 1000);
+          sub.pausedUntil = 0;
         }
       }
       output += `[${label}] `;
-      cli.ok(`${interaction.user.username} paused [${label}] notifications for ${duration[0]} ${interval}(s) | ID: ${interaction.user.id}`)
+      cli.ok(`${interaction.user.username} unpaused [${label}] notifications | ID: ${interaction.user.id}`)
     }
 
     fs.writeFileSync("./subscriptions.json", JSON.stringify(subs, null, 2));
-    output += `notifications for ${duration[0]} ${interval}(s)!`;
+    output += `notifications!`;
     output += '```';
     return interaction.reply({
       content: output,
