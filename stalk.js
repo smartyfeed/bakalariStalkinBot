@@ -29,7 +29,7 @@ async function stalk() {
 
   for (var i = 0; i < save.subscriptions.length; i++) {
     var subInfo = save.subscriptions[i];
-    if (subInfo.pausedUntil && subInfo.pausedUntil >= Math.floor((new Date()).getTime() / 1000)) {
+    if (subInfo.pausedUntil && subInfo.pausedUntil >= Date.now()) {
       continue;
     }
     var user = await module.exports.client.users.fetch(subInfo.userID);
