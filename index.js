@@ -32,29 +32,24 @@ for (const file of commandFiles) {
 
 if (!fs.existsSync('./subscriptions.json')) {
   fs.writeFileSync('./subscriptions.json', JSON.stringify({
-    subscriptions: []
+    subscriptions: [],
   }));
 }
 
 client.once('ready', async () => {
   console.log('Ready!');
-  client.user.setPresence({
-    activities: [{
-      name: 'everyone',
-      type: 'WATCHING'
-    }],
-    status: 'online'
-  });
+  const presenceUpdater = () => {
+    client.user.setPresence({
+      activities: [{
+        name: 'everyone',
+        type: 'WATCHING',
+      }],
+      status: 'online',
+    });
+  };
+  setInterval(presenceUpdater, 60 * 60 * 1000);
+  presenceUpdater();
   stalk.closestNotification();
-
-
-  /*var vcAFK = await client.channels.fetch("833015404498386964");
-
-  const connection = joinVoiceChannel({
-  	channelId: vcAFK.id,
-  	guildId: vcAFK.guild.id,
-  	adapterCreator: vcAFK.guild.voiceAdapterCreator,
-  });*/
 });
 
 client.on('interactionCreate', async interaction => {
@@ -70,7 +65,7 @@ client.on('interactionCreate', async interaction => {
     console.error(error);
     return interaction.reply({
       content: 'There was an error while executing this command!',
-      ephemeral: true
+      ephemeral: true,
     });
   }
 });
