@@ -20,7 +20,7 @@ module.exports.start = async function({ port, clientSecret }) {
 
   app.get('/auth', async function (req, res) {
     if(!req.query.code)
-      return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=http%3A%2F%2Flocalhost%3A1337%2Fauth&response_type=code&scope=identify`);
+      return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=http%3A%2F%2Flocalhost%3A${port}%2Fauth&response_type=code&scope=identify`);
 
     try {
 			const oauthResult = await fetch('https://discord.com/api/oauth2/token', {
@@ -30,7 +30,7 @@ module.exports.start = async function({ port, clientSecret }) {
 					client_secret: clientSecret,
 					code: req.query.code,
 					grant_type: 'authorization_code',
-					redirect_uri: `http://localhost:1337/auth`,
+					redirect_uri: `http://localhost:${port}/auth`,
 					scope: 'identify',
 				}),
 				headers: {
