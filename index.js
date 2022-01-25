@@ -1,15 +1,14 @@
 require('./bakalariStalkin/util/updateClassIDs.js');
+const fs = require('fs');
 
 const stalk = require('./stalk.js');
-const fs = require('fs');
+const apiServer = require('./apiServer.js');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const {
-  Client,
-  Collection,
-  Intents
+  Client, Collection, Intents,
 } = require('discord.js');
 const {
-  token
+  token, apiPort, clientSecret,
 } = require('./config.json');
 const {
   joinVoiceChannel
@@ -50,6 +49,7 @@ client.once('ready', async () => {
   setInterval(presenceUpdater, 60 * 60 * 1000);
   presenceUpdater();
   stalk.closestNotification();
+  apiServer.start({ port: apiPort, clientSecret });
 });
 
 client.on('interactionCreate', async interaction => {
@@ -69,7 +69,5 @@ client.on('interactionCreate', async interaction => {
     });
   }
 });
-
-
 
 client.login(token);
