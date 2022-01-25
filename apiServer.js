@@ -1,3 +1,5 @@
+const redirectURI = "https://bakalari.smartyfeed.me/api/auth";
+
 var sessions = new Map();
 module.exports.sessions = sessions;
 
