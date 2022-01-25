@@ -7,9 +7,12 @@ module.exports.start = async function({ port, clientSecret }) {
   const uuid = require('uuid');
   const fetch = require('node-fetch');
   const cli = require('cli');
+  const cookieParser = require('cookie-parser');
   const app = express();
 
   await client.application.fetch();
+
+  app.use(cookieParser());
 
   app.get('/', function (req, res) {
     res.send('API not documented, to chcete moc');
@@ -41,7 +44,7 @@ module.exports.start = async function({ port, clientSecret }) {
       var session = {};
       sessions.set(stalkerToken, session);
       session.authData = oauthData;
-			res.json({ token: stalkerToken });
+			res.cookie("token", stalkerToken).redirect("/user");
 		} catch (error) {
       console.error(error)
 			res.status(401).send("Invalid Discord token");
@@ -49,7 +52,7 @@ module.exports.start = async function({ port, clientSecret }) {
   });
 
   app.use(function (req, res, next) {
-    var token  = req.query?.token;
+    var token  = req.query?.token || req.cookies?.token;
     if(token && sessions.has(token)) {
       req.session = sessions.get(token);
       next();
