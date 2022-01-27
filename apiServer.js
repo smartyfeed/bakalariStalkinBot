@@ -1,4 +1,4 @@
-const redirectURI = "https://bakalari.smartyfeed.me/api/auth";
+var redirectURI = "https://bakalari.smartyfeed.me/api/auth";
 
 var sessions = new Map();
 module.exports.sessions = sessions;
@@ -13,6 +13,11 @@ module.exports.start = async function({ port, clientSecret }) {
   const app = express();
 
   await client.application.fetch();
+
+  if(process.env.NODE_ENV == 'development') {
+    app.use(require('cors')());
+    redirectURI = "http://localhost:1337/auth";
+  }
 
   app.use(cookieParser());
 
@@ -46,7 +51,7 @@ module.exports.start = async function({ port, clientSecret }) {
       var session = {};
       sessions.set(stalkerToken, session);
       session.authData = oauthData;
-			res.cookie("token", stalkerToken).redirect("/");
+			res.cookie("token", stalkerToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + stalkerToken : "/");
 		} catch (error) {
       console.error(error)
 			res.status(401).json({
