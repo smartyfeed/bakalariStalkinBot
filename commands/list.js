@@ -1,3 +1,4 @@
+const db = require("../lib/dbpromise");
 const cli = require('cli');
 const cliui = require('cliui');
 const {
@@ -12,8 +13,7 @@ module.exports = {
   async execute(interaction) {
     const owner = interaction.user.id;
     var output = '';
-    var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
-    var activeSubs = save.subscriptions.filter(entry => entry.userID === owner);
+    var activeSubs = await db.all("SELECT * FROM subscriptions WHERE userID = ?", owner);
     if (activeSubs.length === 0) return interaction.reply({
       content: `No active sessions registered for ${interaction.user.username}`,
       ephemeral: true

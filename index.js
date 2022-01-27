@@ -14,11 +14,15 @@ const {
   joinVoiceChannel
 } = require('@discordjs/voice');
 
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./save.db');
+
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS]
 });
 stalk.client = client;
 module.exports.client = client;
+module.exports.db = db;
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -27,12 +31,6 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   command.client = client;
   client.commands.set(command.data.name, command);
-}
-
-if (!fs.existsSync('./subscriptions.json')) {
-  fs.writeFileSync('./subscriptions.json', JSON.stringify({
-    subscriptions: [],
-  }));
 }
 
 client.once('ready', async () => {
@@ -70,4 +68,16 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-client.login(token);
+db.serialize(function() {
+  require("./lib/initdb")(db);
+
+  client.login(token);
+});
+
+process.on("SIGINT", function() {
+  db.close(() => process.exit());
+});
+
+process.on("SIGTERM", function() {
+  db.close(() => process.exit());
+});

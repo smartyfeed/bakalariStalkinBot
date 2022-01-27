@@ -4,3 +4,4 @@ config.json
 subscriptions.json
 .gitconfig
 .git-credentials
+save.db
