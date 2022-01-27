@@ -49,7 +49,10 @@ module.exports.start = async function({ port, clientSecret }) {
 			res.cookie("token", stalkerToken).redirect("/");
 		} catch (error) {
       console.error(error)
-			res.status(401).send("Invalid Discord token");
+			res.status(401).json({
+        error: "E_BAD_CODE",
+        message: "Provided Discord code is not valid or an unknown error occurred while creating the session",
+      });
 		}
   });
 
@@ -59,7 +62,10 @@ module.exports.start = async function({ port, clientSecret }) {
       req.session = sessions.get(token);
       next();
     } else {
-      res.status(401).send("401 Unauthorized");
+      res.status(401).json({
+        error: "E_BAD_SESSION_TOKEN",
+        message: "Session token invalid or missing",
+      });
     }
   });
 
