@@ -16,7 +16,7 @@ module.exports.start = async function({ port, clientSecret }) {
 
   if(process.env.NODE_ENV == 'development') {
     app.use(require('cors')());
-    redirectURI = "http://localhost:1337/auth";
+    redirectURI = "http://localhost:6969/auth";
   }
 
   app.use(cookieParser());
