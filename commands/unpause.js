@@ -1,4 +1,5 @@
 const cli = require('cli');
+const db = require("../lib/dbpromise");
 const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
@@ -14,8 +15,7 @@ module.exports = {
     const label = interaction.options.getString('label');
     const user = interaction.user.id;
 
-    var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
-    var subs = save;
+    var subs = await db.all('SELECT * from subscriptions where userID = ?', user);
 
     if (interaction.inGuild()) {
       return interaction.reply({
@@ -23,18 +23,17 @@ module.exports = {
         ephemeral: true
       });
     }
-
-    if (save.subscriptions.findIndex(entry => entry.userID === user) == -1) {
+    if (!subs.length) {
       return interaction.reply({
         content: `You don't have any active subscriptions`,
         ephemeral: true
       });
     }
 
-    if (label && save.subscriptions.findIndex(entry => entry.userID === user && entry.label === label) == -1) {
-      var activeSubs = save.subscriptions.filter(entry => entry.userID === user);
+    var subsByLabel = await db.all('SELECT * FROM subscriptions WHERE userID = ? AND label = ?', [user, label]);
+    if (label && !subsByLabel.length) {
       var info = '```Active subs:\n';
-      info += activeSubs.map(entry => `${entry.label} | ${entry.className} ${entry.groups}`)
+      info += subs.map(entry => `${entry.label} | ${entry.className} ${entry.groups}`)
         .join('\n');
       info += '```';
       return interaction.reply({
@@ -44,24 +43,17 @@ module.exports = {
     }
 
     if (label === null) {
-      for (var sub of subs.subscriptions) {
-        if (sub.userID == user) {
-          sub.pausedUntil = 0;
-        }
-      }
+      await db.all('UPDATE subscriptions SET pausedUntil = ? WHERE userID = ?', 
+        [0, user]);
       output += 'all ';
       cli.ok(`${interaction.user.username} unpaused all notifications | ID: ${interaction.user.id}`);
     } else {
-      for (var sub of subs.subscriptions) {
-        if (sub.userID == user && sub.label == label) {
-          sub.pausedUntil = 0;
-        }
-      }
+      await db.all('UPDATE subscriptions SET pausedUntil = ? WHERE userID = ? AND label = ?', 
+        [0, user, label]);
       output += `[${label}] `;
       cli.ok(`${interaction.user.username} unpaused [${label}] notifications | ID: ${interaction.user.id}`)
     }
 
-    fs.writeFileSync("./subscriptions.json", JSON.stringify(subs, null, 2));
     output += `notifications!`;
     output += '```';
     return interaction.reply({

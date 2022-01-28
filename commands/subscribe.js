@@ -1,4 +1,5 @@
 const generic = require('../bakalariStalkin/util/generic.js');
+const db = require("../lib/dbpromise");
 const cli = require('cli');
 const cliui = require('cliui');
 const {
@@ -31,22 +32,9 @@ module.exports = {
         return interaction.reply({ content: `Incorrect group: ${groups[i]}`, ephemeral: true });
       }
     }
-    var entry = {
-      userID: interaction.user.id,
-      className,
-      groups,
-      label,
-    };
 
-    var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
-    var index = save.subscriptions.findIndex(entry => entry.userID === interaction.user.id && entry.className === className && entry.groups.join(' ') === groups.join(' '));
-
-    if (index != -1) {
-      return interaction.reply({ content: `Active stalking session for ${className} ${groups} already exists! | Label: ${save.subscriptions[index].label}`, ephemeral: true });
-    }
-
-    save.subscriptions.push(entry);
-    fs.writeFileSync("./subscriptions.json", JSON.stringify(save, null, 2));
+    await db.run("INSERT INTO subscriptions values(?, ?, ?, ?, ?)",
+      [interaction.user.id, className, JSON.stringify(groups), 0, label]);
     cli.ok(`${interaction.user.username} started stalking ${className} ${groups} | ID: ${interaction.user.id}`)
     return interaction.reply({ content: `Successfully started stalking! :sunglasses:`, ephemeral: true });
   },
