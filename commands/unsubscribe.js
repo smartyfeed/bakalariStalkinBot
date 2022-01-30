@@ -1,4 +1,5 @@
 const cli = require('cli');
+const db = require("../lib/dbpromise");
 const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
@@ -13,15 +14,13 @@ module.exports = {
     const label = interaction.options.getString('label');
     const owner = interaction.user.id;
 
-    var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
-    var index = save.subscriptions.findIndex(entry => entry.userID === owner && entry.label === label);
-    if (index == -1) {
+    var save = await db.all("SELECT * FROM subscriptions WHERE userID = ? AND label = ? LIMIT 1", [owner, label]);
+    if (save.length == 0) {
       return interaction.reply({ content: `Could not find an active subscription with this label`, ephemeral: true });
     }
 
-    var [info] = save.subscriptions.splice(index, 1);
-    fs.writeFileSync("./subscriptions.json", JSON.stringify(save, null, 2));
-    cli.ok(`${interaction.user.username} stopped stalking ${info.className} ${info.groups} | ID: ${interaction.user.id}`)
+    db.run("DELETE FROM subscriptions where userID = ? AND label = ?", [owner, label]);
+    cli.ok(`${interaction.user.username} stopped stalking ${save[0].className} ${save[0].groups} | ID: ${interaction.user.id}`)
     return interaction.reply({ content: `Successfully unsubscribed! What a shame! :chicken:`, ephemeral: true });
   },
 };

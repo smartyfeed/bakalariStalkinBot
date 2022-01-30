@@ -1,4 +1,5 @@
 const cli = require('cli');
+const db = require("../lib/dbpromise");
 const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
@@ -11,10 +12,8 @@ module.exports = {
 
     async execute(interaction) {
       const owner = interaction.user.id;
-      var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
-
-      save.subscriptions = save.subscriptions.filter(entry => entry.userID != owner);
-      fs.writeFileSync("./subscriptions.json", JSON.stringify(save, null, 2));
+      
+      db.run("DELETE FROM subscriptions where userID = ?", owner);
       cli.ok(`${interaction.user.username} stopped stalking all people | ${owner}`)
       return interaction.reply({
         content: `Successfully unsubscribed from all!`,
