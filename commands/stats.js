@@ -12,7 +12,8 @@ module.exports = {
     .setDescription('Show ALL stalking sessions'),
   async execute(interaction) {
     await module.exports.client.application.fetch();
-    if (!module.exports.client.application.owner.members?.find(member => member.user.id == interaction.user.id))
+    if (!module.exports.client.application.owner.members?.find(member => member.user.id == interaction.user.id)
+      && module.exports.client.application.owner?.id != interaction.user.id)
       return interaction.reply({
         content: "You can not use this command",
         ephemeral: true
