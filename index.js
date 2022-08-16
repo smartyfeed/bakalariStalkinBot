@@ -34,11 +34,11 @@ for (const file of commandFiles) {
 }
 
 client.once('ready', async () => {
-  console.log('Ready!');
+  console.log('Ready as "' + client?.user?.username + "#" + client?.user?.discriminator + '"');
   const presenceUpdater = () => {
     client.user.setPresence({
       activities: [{
-        name: 'everyone',
+        name: process.env.NODE_ENV == 'development' ? 'my code' : 'everyone',
         type: 'WATCHING',
       }],
       status: 'online',
