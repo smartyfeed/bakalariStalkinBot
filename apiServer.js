@@ -16,7 +16,7 @@ module.exports.start = async function({ port, clientSecret }) {
 
   if(process.env.NODE_ENV == 'development') {
     app.use(require('cors')());
-    redirectURI = "http://localhost:6969/auth";
+    redirectURI = `http://localhost:${port}/auth`;
   }
 
   app.use(cookieParser());
@@ -78,4 +78,5 @@ module.exports.start = async function({ port, clientSecret }) {
 
   app.listen(port);
   cli.ok(`API server listening on ${port}`);
+  cli.info(`Auth at ${redirectURI}`);
 }
