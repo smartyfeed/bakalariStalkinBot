@@ -47,10 +47,17 @@ module.exports.start = async function({ port, clientSecret }) {
       const oauthData = await oauthResult.json();
       if(oauthData.error) throw oauthData.error;
 
+      const userResult = await fetch('https://discord.com/api/users/@me', {
+      	headers: {
+      		authorization: `${oauthData.token_type} ${oauthData.access_token}`,
+      	},
+      });
+
       var stalkerToken = uuid.v4();
       var session = {};
       sessions.set(stalkerToken, session);
       session.authData = oauthData;
+      session.user = await userResult.json();
 			res.cookie("token", stalkerToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + stalkerToken : "/");
 		} catch (error) {
       console.error(error)
@@ -75,6 +82,7 @@ module.exports.start = async function({ port, clientSecret }) {
   });
 
   app.get('/user', require('./api/user'));
+  app.get('/list', require('./api/list'));
 
   app.listen(port);
   cli.ok(`API server listening on ${port}`);
