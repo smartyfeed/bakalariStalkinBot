@@ -2,80 +2,107 @@ const fs = require('fs');
 const cli = require('cli');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const utils = require('./bakalariStalkin/util/generic.js');
+const db = require("./lib/dbpromise");
 const {
   MessageEmbed
 } = require('discord.js');
 
-var times = JSON.parse(fs.readFileSync("./times.json", "UTF8"));
-var nextLesson;
-
 module.exports.stalk = stalk;
-module.exports.closestNotification = closestNotification;
 
 async function stalk() {
-  var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
+  var subscriptions = {};
+  var classes = new Set();
+  var timetables = {};
 
-  var classNames = new Set();
-  var rozvrhy = {};
+  await updateTTs();
 
-  for (var i = 0; i < save.subscriptions.length; i++) {
-    classNames.add(utils.getClassInfo(save.subscriptions[i].className).id);
+  await fetchSubscriptions();
+
+  console.log(subscriptions);
+
+  for (subscription of Object.values(subscriptions)) {
+    planNotification(subscription);
   }
 
-  for (var item of classNames) {
-    var timeTable = await getTT(item);
-    rozvrhy[utils.getClassInfo(item).name] = timeTable;
-  }
-
-  for (var i = 0; i < save.subscriptions.length; i++) {
-    var subInfo = save.subscriptions[i];
-    if (subInfo.pausedUntil && subInfo.pausedUntil >= Date.now()) {
-      continue;
-    }
-    var user = await module.exports.client.users.fetch(subInfo.userID);
-    var day = rozvrhy[subInfo.className]
-      .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(0))
-      .filter(utils.filterGroups(subInfo.groups))
-      .filter(atom => atom.period == nextLesson);
-
-
-    for (var j = 0; j < day.length; j++) {
-      var lesson = day[j];
-      const lukMomIhaveEmbed = new MessageEmbed()
-        .setColor(lesson.changeinfo !== ""?'#ff3300':'#0099ff')
-        .setTitle(subInfo.label)
-        .setDescription(`${lesson.beginTime} - ${lesson.endTime} | ${lesson.room}\n${lesson.subjectName}${lesson.group?` | ${lesson.group}`:``}\n${lesson.teacher}`)
+  async function updateTTs() {
+    for (let item of classes) {
       try {
-        await user.send({
-          embeds: [lukMomIhaveEmbed]
-        });
-        cli.ok(`Sent notification "${subInfo.label}" to user ${user?.tag} ( <@${subInfo.userID}> )`);
-      } catch(e) {
-        cli.error(`Sending notification to user ${user?.tag} ( <@${subInfo.userID}> ) failed:
-    ${e.message}`);
+        await updateTT(item);
+      } catch (e) {
+        cli.error(e);
       }
+      setTimeout(updateTT, 15 * 60 * 1000);
     }
   }
-  closestNotification();
-}
 
-function closestNotification() {
-  var d = new Date();
-  for (var i = 0; i < times.length; i++) {
-    var tt = times[i].endtime.split(':');
-    var d2 = new Date();
-    d2.setHours(tt[0]);
-    d2.setMinutes(tt[1]);
-    d2.setSeconds(0);
-    d2.setMilliseconds(0);
-
-    var diff = d2.getTime() - d.getTime();
-
-    if (diff > 1000) {
-      setTimeout(stalk, diff);
-      nextLesson = times[i].sequence + 1;
+  async function updateTT(item) {
+    if (!timetables[item]) {
+      timetables[item] = {
+        timetable: []
+      };
+    }
+    if (Date.now() - timetables[item].lastUpdate < 5 * 60 * 1000) {
       return;
     }
+    timetables[item].lastUpdate = Date.now();
+    var parts = item.split("\0");
+    var timetable = await getTT(parts[1], parts[0]);
+    timetables[item].timetable = timetable;
   }
-  setTimeout(closestNotification, 6 * 60 * 60 * 1000);
+
+  async function fetchSubscriptions() {
+    subs = await db.all("SELECT * FROM subscriptions");
+    for (let item of subs) {
+      item.groups = JSON.parse(item.groups);
+      subscriptions[item.id] = {
+        info: item,
+        lastCheck: Date.now()
+      };
+      var classString = `${item.bakaServer}\0${item.classID}`
+      classes.add(classString);
+      await updateTT(classString);
+    }
+  }
+
+  async function planNotification(subscription, lastTimeout) {
+    const maxTimeout = 60 * 60 * 1000;
+    var now = Date.now();
+    var lastCheck = subscription.lastCheck;
+    subscription.lastCheck = now;
+
+    var timetable = timetables[`${subscription.info.bakaServer}\0${subscription.info.classID}`].timetable
+      .filter(utils.filterGroups(subscription.info.groups))
+      .filter(atom => atom.endTimestamp > lastCheck)
+      .sort((a, b) => a.endTimestamp - b.endTimestamp);
+
+    var pastEvents = timetable.filter(atom => atom.endTimestamp <= now);
+    var upcomingEvents = timetable.filter(atom => atom.endTimestamp > now);
+
+    for (let event of upcomingEvents) {
+      sendNotification(subscription, event);
+    }
+
+    var timeout = upcomingEvent ? Math.min(upcomingEvent.endTimestamp - now, maxTimeout) : maxTimeout;
+    if (lastTimeout == maxTimeout && timeout != maxTimeout) {
+      timeout-= 10 * 60 * 1000;
+    }
+    setTimeout(() => planNotification(subscription, timeout), timeout);
+  }
+
+  async function sendNotification(subscription, event) {
+    var user = await module.exports.client.users.fetch(subscription.info.userID);
+    const lukMomIhaveEmbed = new MessageEmbed()
+      .setColor(event.changeinfo !== "" ? '#ff3300' : '#0099ff')
+      .setTitle(subscription.info.label)
+      .setDescription(`${event.beginTime} - ${event.endTime} | ${event.room}\n${event.subjectName}${event.group?` | ${event.group}`:``}\n${event.teacher}`)
+    try {
+      await user.send({
+        embeds: [lukMomIhaveEmbed]
+      });
+      cli.ok(`Sent notification "${subscription.info.label}" to user ${user?.tag} ( <@${subscription.info.userID}> )`);
+    } catch (e) {
+      cli.error(`Sending notification to user ${user?.tag} ( <@${subscription.info.userID}> ) failed:
+    ${e.message}`);
+    }
+  }
 }

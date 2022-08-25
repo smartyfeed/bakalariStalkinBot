@@ -34,8 +34,8 @@ module.exports = {
     }
 
     await db.run("INSERT INTO subscriptions values(?, ?, ?, ?, ?)",
-      [interaction.user.id, className, JSON.stringify(groups), 0, label]);
-    cli.ok(`${interaction.user.username} started stalking ${className} ${groups} | ID: ${interaction.user.id}`)
+      [interaction.user.id, generic.getClassInfo(className).id, JSON.stringify(groups), 0, label]);
+    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${generic.getClassInfo(className).id}) ${groups} | ID: ${interaction.user.id}`)
     return interaction.reply({ content: `Successfully started stalking! :sunglasses:`, ephemeral: true });
   },
 };
