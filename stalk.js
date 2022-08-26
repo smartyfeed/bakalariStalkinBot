@@ -68,7 +68,7 @@ async function stalk() {
     let now = Date.now();
     let lastCheck = subscription.lastCheck;
     subscription.lastCheck = now;
-    let updatedSub = db.all("SELECT * FROM subscriptions WHERE id = ?", subscription.info.id);
+    let updatedSub = await db.all("SELECT * FROM subscriptions WHERE id = ?", subscription.info.id);
     if (updatedSub.length == 0) {
       return;
     }
