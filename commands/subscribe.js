@@ -1,4 +1,6 @@
 const generic = require('../bakalariStalkin/util/generic.js');
+const getBaseUrl = require('../bakalariStalkin/util/getBaseUrl.js');
+const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
 const db = require("../lib/dbpromise");
 const cli = require('cli');
 const cliui = require('cliui');
@@ -12,8 +14,10 @@ module.exports = {
     .setName('subscribe')
     .setDescription('Initiate a stalking session for a specific class/group.')
     .addStringOption(option => option.setName('class').setDescription('Class you want to subscribe to (for example P3.B)').setRequired(true))
+    .addBooleanOption(option => option.setName('onclassstart').setDescription('Send notification on class start instead of the end').setRequired(true))
     .addStringOption(option => option.setName('groups').setDescription('Preferred groups (for example 1.sk or 1.sk 3.sk)').setRequired(false))
-    .addStringOption(option => option.setName('label').setDescription('Your "genius" label').setRequired(false)),
+    .addStringOption(option => option.setName('label').setDescription('Your "genius" label').setRequired(false))
+    .addStringOption(option => option.setName('server').setDescription('Base URL of your Bakalari server, default - SSSVT server').setRequired(false)),
   async execute(interaction) {
     const className = interaction.options.getString('class').toUpperCase();
     const groups = interaction.options.getString('groups')?.split(" ")
@@ -21,21 +25,55 @@ module.exports = {
       .sort()
       .filter((v, i, self) => self.indexOf(v) === i) || [];
     const label = interaction.options.getString('label') || className;
+    var server = interaction.options.getString('server');
+    if (server) {
+      server = await getBaseUrl(interaction.options.getString('server'));
 
-    if (!generic.getClassInfo(className)) {
-      cli.error(`Incorrect class (${className}) entered by ${interaction.user.username} | ${interaction.user.id}`)
-      return interaction.reply({ content: `Incorrect class: ${className}`, ephemeral: true });
+      if (server === null) {
+        cli.error(`Invalid server URL (${interaction.options.getString('server')}) entered by ${interaction.user.username} | ${interaction.user.id}`);
+        return interaction.reply({
+          content: `Invalid Bakalari server URL (${interaction.options.getString('server')})`,
+          ephemeral: true
+        });
+      }
+      if (server === undefined) {
+        cli.error(`Valid server URL (${interaction.options.getString('server')}) without public TT entered by ${interaction.user.username} | ${interaction.user.id}`);
+        return interaction.reply({
+          content: `Unfortunately this Bakalari server is not supported`,
+          ephemeral: true
+        });
+      }
+    } else {
+      server = "https://is.sssvt.cz/IS/Timetable/Public";
+    }
+
+    await updateClassIDs(server);
+
+    var onClassStart = interaction.options.getBoolean('onClassStart');
+
+    if (!generic.getClassInfo(className, false, server)) {
+      cli.error(`Incorrect class (${className}, ${server}) entered by ${interaction.user.username} | ${interaction.user.id}`)
+      return interaction.reply({
+        content: `Incorrect class: ${className}`,
+        ephemeral: true
+      });
     }
     for (var i = 0; i < groups.length; i++) {
       if (!/^[1-4].sk$/.test(groups[i])) {
         cli.error(`Incorrect group (${groups[i]}) entered by ${interaction.user.username} | ${interaction.user.id}`)
-        return interaction.reply({ content: `Incorrect group: ${groups[i]}`, ephemeral: true });
+        return interaction.reply({
+          content: `Incorrect group: ${groups[i]}`,
+          ephemeral: true
+        });
       }
     }
 
-    await db.run("INSERT INTO subscriptions values(?, ?, ?, ?, ?)",
-      [interaction.user.id, generic.getClassInfo(className).id, JSON.stringify(groups), 0, label]);
-    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${generic.getClassInfo(className).id}) ${groups} | ID: ${interaction.user.id}`)
-    return interaction.reply({ content: `Successfully started stalking! :sunglasses:`, ephemeral: true });
+    await db.run("INSERT INTO subscriptions(userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) values(?, ?, ?, ?, ?, ?, ?)",
+      [interaction.user.id, generic.getClassInfo(className, false, server).id, JSON.stringify(groups), 0, label, server, onClassStart ? 1 : 0]);
+    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${generic.getClassInfo(className, false, server).id}) ${groups}, server: ${server} | ID: ${interaction.user.id}`)
+    return interaction.reply({
+      content: `Successfully started stalking! :sunglasses:`,
+      ephemeral: true
+    });
   },
 };
