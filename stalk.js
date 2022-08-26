@@ -65,9 +65,14 @@ async function stalk() {
   async function planNotification(subscription, lastTimeout) {
     const maxTimeout = 60 * 60 * 1000;
     const firstOffset = 10 * 60 * 1000;
-    var now = Date.now();
-    var lastCheck = subscription.lastCheck;
+    let now = Date.now();
+    let lastCheck = subscription.lastCheck;
     subscription.lastCheck = now;
+    let updatedSub = db.all("SELECT * FROM subscriptions WHERE id = ?", subscription.info.id);
+    if (updatedSub.length == 0) {
+      return;
+    }
+    subscription.info = updatedSub[0];
     var timeout = 0;
 
     var timetable = timetables[`${subscription.info.bakaServer}\0${subscription.info.classID}`].timetable
@@ -130,7 +135,7 @@ async function stalk() {
     if (subscription.info.pausedUntil > Date.now()) {
       return;
     }
-    var user = await module.exports.client.users.fetch(subscription.info.userID);
+    let user = await module.exports.client.users.fetch(subscription.info.userID);
     const lukMomIhaveEmbed = new MessageEmbed()
       .setColor(event.changeinfo !== "" ? '#ff3300' : '#0099ff')
       .setTitle(subscription.info.label)
