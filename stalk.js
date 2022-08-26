@@ -1,4 +1,3 @@
-const fs = require('fs');
 const cli = require('cli');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const utils = require('./bakalariStalkin/util/generic.js');
@@ -6,7 +5,6 @@ const db = require("./lib/dbpromise");
 const {
   MessageEmbed
 } = require('discord.js');
-
 module.exports.stalk = stalk;
 
 async function stalk() {
@@ -66,30 +64,72 @@ async function stalk() {
 
   async function planNotification(subscription, lastTimeout) {
     const maxTimeout = 60 * 60 * 1000;
+    const firstOffset = 10 * 60 * 1000;
     var now = Date.now();
     var lastCheck = subscription.lastCheck;
     subscription.lastCheck = now;
+    var timeout = 0;
 
     var timetable = timetables[`${subscription.info.bakaServer}\0${subscription.info.classID}`].timetable
       .filter(utils.filterGroups(subscription.info.groups))
-      .filter(atom => atom.endTimestamp > lastCheck)
       .sort((a, b) => a.endTimestamp - b.endTimestamp);
 
-    var pastEvents = timetable.filter(atom => atom.endTimestamp <= now);
-    var upcomingEvents = timetable.filter(atom => atom.endTimestamp > now);
+    if (subscription.info.notificationOnClassStart == 0) {
+      let upcomingEvents = timetable.filter(atom => atom.endTimestamp > now);
 
-    for (let event of upcomingEvents) {
-      sendNotification(subscription, event);
-    }
+      if (upcomingEvents.length == 0) {
+        timeout = maxTimeout;
+        setTimeout(() => planNotification(subscription, timeout), timeout);
+        return;
+      }
 
-    var timeout = upcomingEvent ? Math.min(upcomingEvent.endTimestamp - now, maxTimeout) : maxTimeout;
-    if (lastTimeout == maxTimeout && timeout != maxTimeout) {
-      timeout-= 10 * 60 * 1000;
+      var upcomingEvent = upcomingEvents[0];
+
+      if (upcomingEvent.beginTimestamp < now && now < upcomingEvent.endTimestamp) {
+        timeout = upcomingEvent.endTimestamp - now;
+        setTimeout(() => planNotification(subscription, timeout), timeout);
+        return;
+      }
+
+      if (lastTimeout == maxTimeout && upcomingEvent.beginTimestamp - now < maxTimeout) {
+        timeout = upcomingEvent.beginTimestamp - now - firstOffset;
+        setTimeout(() => planNotification(subscription, timeout), timeout);
+        return;
+      }
+
+      if (upcomingEvent.beginTimestamp - now < maxTimeout) {
+        let events = upcomingEvents.filter(atom => atom.beginTimestamp == upcomingEvent.beginTimestamp);
+        if (process.uptime() > 5) {
+          for (let event of events) {
+            sendNotification(subscription, event);
+          }
+        }
+        timeout = Math.min(upcomingEvent.endTimestamp - now, maxTimeout);
+        setTimeout(() => planNotification(subscription, timeout), timeout);
+      } else {
+        timeout = Math.min(upcomingEvent.beginTimestamp - now - firstOffset, maxTimeout);
+        setTimeout(() => planNotification(subscription, timeout), timeout);
+      }
+    } else {
+      let pastEvents = timetable.filter(atom => atom.beginTimestamp > lastCheck && atom.beginTimestamp <= now);
+      let upcomingEvents = timetable.filter(atom => atom.beginTimestamp > now);
+
+      let upcomingEvent = upcomingEvents[0];
+
+      for (let event of pastEvents) {
+        sendNotification(subscription, event);
+      }
+
+      timeout = upcomingEvents ? Math.min(upcomingEvent.beginTimestamp - now, maxTimeout) : maxTimeout;
+
+      setTimeout(() => planNotification(subscription, timeout), timeout);
     }
-    setTimeout(() => planNotification(subscription, timeout), timeout);
   }
 
   async function sendNotification(subscription, event) {
+    if (subscription.info.pausedUntil > Date.now()) {
+      return;
+    }
     var user = await module.exports.client.users.fetch(subscription.info.userID);
     const lukMomIhaveEmbed = new MessageEmbed()
       .setColor(event.changeinfo !== "" ? '#ff3300' : '#0099ff')
