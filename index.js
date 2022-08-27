@@ -47,7 +47,7 @@ client.once('ready', async () => {
   setInterval(presenceUpdater, 60 * 60 * 1000);
   presenceUpdater();
   stalk.stalk();
-  // stalk.closestNotification();
+  
   apiServer.start({ port: apiPort, clientSecret });
 });
 
