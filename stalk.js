@@ -8,18 +8,31 @@ const {
 module.exports.stalk = stalk;
 
 async function stalk() {
+  module.exports.initSubscription = initSubscription;
+
   var subscriptions = {};
   var classes = new Set();
   var timetables = {};
+
 
   await updateTTs();
 
   await fetchSubscriptions();
 
-  console.log(subscriptions);
-
   for (subscription of Object.values(subscriptions)) {
     planNotification(subscription);
+  }
+
+  async function initSubscription(subscriptionID) {
+    let subscription = await db.get("SELECT * FROM subscriptions WHERE id = ?", subscriptionID);
+    subscription.groups = JSON.parse(subscription.groups);
+    subscriptions[subscription.id] = {
+      info: subscription,
+      lastCheck: Date.now()
+    };
+    let classString = `${subscription.bakaServer}\0${subscription.classID}`
+    classes.add(classString);
+    await updateTT(classString);
   }
 
   async function updateTTs() {
@@ -43,8 +56,8 @@ async function stalk() {
       return;
     }
     timetables[item].lastUpdate = Date.now();
-    var parts = item.split("\0");
-    var timetable = await getTT(parts[1], parts[0]);
+    let parts = item.split("\0");
+    let timetable = await getTT(parts[1], parts[0]);
     timetables[item].timetable = timetable;
   }
 
@@ -56,7 +69,7 @@ async function stalk() {
         info: item,
         lastCheck: Date.now()
       };
-      var classString = `${item.bakaServer}\0${item.classID}`
+      let classString = `${item.bakaServer}\0${item.classID}`
       classes.add(classString);
       await updateTT(classString);
     }

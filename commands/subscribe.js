@@ -1,6 +1,7 @@
 const generic = require('../bakalariStalkin/util/generic.js');
 const getBaseUrl = require('../bakalariStalkin/util/getBaseUrl.js');
 const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
+const stalk = require('../stalk.js');
 const db = require("../lib/dbpromise");
 const cli = require('cli');
 const cliui = require('cliui');
@@ -68,8 +69,11 @@ module.exports = {
       }
     }
 
-    await db.run("INSERT INTO subscriptions(userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) values(?, ?, ?, ?, ?, ?, ?)",
+    let result = await db.run("INSERT INTO subscriptions(userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) values(?, ?, ?, ?, ?, ?, ?)",
       [interaction.user.id, generic.getClassInfo(className, false, server).id, JSON.stringify(groups), 0, label, server, onClassStart ? 1 : 0]);
+
+    await stalk.initSubscription(result.lastID);
+
     cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${generic.getClassInfo(className, false, server).id}) ${groups}, server: ${server} | ID: ${interaction.user.id}`)
     return interaction.reply({
       content: `Successfully started stalking! :sunglasses:`,
