@@ -20,7 +20,7 @@ async function stalk() {
   await fetchSubscriptions();
 
   for (subscription of Object.values(subscriptions)) {
-    planNotification(subscription);
+    await planNotification(subscription);
   }
 
   async function initSubscription(subscriptionID) {
@@ -33,6 +33,7 @@ async function stalk() {
     let classString = `${subscription.bakaServer}\0${subscription.classID}`
     classes.add(classString);
     await updateTT(classString);
+    await planNotification(subscription);
   }
 
   async function updateTTs() {
