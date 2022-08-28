@@ -33,7 +33,7 @@ async function stalk() {
     let classString = `${subscription.bakaServer}\0${subscription.classID}`
     classes.add(classString);
     await updateTT(classString);
-    await planNotification(subscription);
+    await planNotification(subscriptions[subscription.id]);
   }
 
   async function updateTTs() {
