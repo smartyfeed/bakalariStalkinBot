@@ -76,9 +76,11 @@ db.serialize(function() {
 });
 
 process.on("SIGINT", function() {
+  client.user.setStatus('invisible');
   db.close(() => process.exit());
 });
 
 process.on("SIGTERM", function() {
+  client.user.setStatus('invisible');
   db.close(() => process.exit());
 });
