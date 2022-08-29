@@ -18,7 +18,7 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./save.db');
 
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS]
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
 });
 stalk.client = client;
 module.exports.client = client;
