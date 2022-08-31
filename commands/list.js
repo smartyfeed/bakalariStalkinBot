@@ -1,6 +1,8 @@
 const db = require("../lib/dbpromise");
 const cli = require('cli');
 const cliui = require('cliui');
+const generic = require('../bakalariStalkin/util/generic.js');
+const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
 const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
@@ -19,7 +21,9 @@ module.exports = {
       ephemeral: true
     });
     for (sub of activeSubs) {
-      output += `**${sub.label}** | ${sub.className} ${sub.groups?sub.groups:''}`;
+      await updateClassIDs(sub.bakaServer);
+      
+      output += `**${sub.label}** | ${generic.getClassInfo(sub.classID, false, sub.bakaServer).name} ${sub.groups?sub.groups:''}`;
       if (sub.pausedUntil && sub.pausedUntil >= new Date().getTime()) {
         var pauseEnd = new Date(sub.pausedUntil);
         var year = pauseEnd.getFullYear();
