@@ -43,7 +43,7 @@ async function stalk() {
       } catch (e) {
         cli.error(e);
       }
-      setTimeout(updateTT, 15 * 60 * 1000);
+      setTimeout(updateTTs, 15 * 60 * 1000);
     }
   }
 
