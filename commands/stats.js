@@ -4,6 +4,11 @@ const {
   SlashCommandBuilder
 } = require('@discordjs/builders');
 const fs = require('fs');
+const db = require("../lib/dbpromise");
+const generic = require('../bakalariStalkin/util/generic.js');
+const {
+  MessageAttachment
+} = require('discord.js')
 
 module.exports = {
   hidden: true,
@@ -12,29 +17,40 @@ module.exports = {
     .setDescription('Show ALL stalking sessions'),
   async execute(interaction) {
     await module.exports.client.application.fetch();
-    if (!module.exports.client.application.owner.members?.find(member => member.user.id == interaction.user.id)
-      && module.exports.client.application.owner?.id != interaction.user.id)
+    if (!module.exports.client.application.owner.members?.find(member => member.user.id == interaction.user.id) &&
+      module.exports.client.application.owner?.id != interaction.user.id)
       return interaction.reply({
         content: "You can not use this command",
         ephemeral: true
       });
 
     var stalkers = {};
-    var save = JSON.parse(fs.readFileSync("./subscriptions.json", "UTF8"));
+    let subs = await db.all("SELECT * FROM subscriptions");
 
-    for (var bruh of save.subscriptions) {
-      if (!stalkers[bruh.userID]) {
-        stalkers[bruh.userID] = [];
+    subs.map(sub => {
+      sub.className = generic.getClassInfo(sub.classID, false, sub.bakaServer).name
+    });
+
+    for (let sub of subs) {
+      if (!stalkers[sub.userID]) {
+        stalkers[sub.userID] = [];
+
       }
-      stalkers[bruh.userID].push(bruh);
+      stalkers[sub.userID].push(sub);
     }
-    var output = '```diff'
+
+    await interaction.deferReply({
+      ephemeral: true
+    });
+
+    let output = '';
+
     for (var stalkerID in stalkers) {
-      var subs = stalkers[stalkerID];
-      var user = await module.exports.client.users.fetch(stalkerID);
-      output += `\n- ${user.tag}\n`
+      let subs = stalkers[stalkerID];
+      let user = await module.exports.client.users.fetch(stalkerID);
+      output += `\n- ${user.tag}\n`;
       for (var i = 0; i < subs.length; i++) {
-        output += `+ ${subs[i].className} ${subs[i].groups?subs[i].groups:''} ${subs[i].label?` - ${subs[i].label}`:''}`
+        output += `+ ID: ${subs[i].id} | ${subs[i].className} ${subs[i].groups?subs[i].groups:''} ${subs[i].label?` - ${subs[i].label}`:''}`
         if (subs[i].pausedUntil && subs[i].pausedUntil >= new Date().getTime()) {
           var pauseEnd = new Date(subs[i].pausedUntil);
           var year = pauseEnd.getFullYear();
@@ -45,13 +61,17 @@ module.exports = {
           var seconds = ("0" + pauseEnd.getSeconds()).slice(-2);
           output += `  ->  Paused until ${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
         }
-        output += '\n';
+        let notifTime = !!subs[i].notificationOnClassStart ? 'Class start' : 'Class end';
+        output += `\n+ ${notifTime}`;
+        output += `\n+ ${subs[i].bakaServer}\n\n`;
       }
     }
-    output += '```';
-    return interaction.reply({
-      content: output,
-      ephemeral: true
+
+    const buffer = Buffer.from(output);
+    const attachment = new MessageAttachment(buffer, 'file.diff')
+    return interaction.editReply({
+      ephemeral: true,
+      files: [attachment]
     });
   },
-};
+}
