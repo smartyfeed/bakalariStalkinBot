@@ -77,6 +77,8 @@ async function stalk() {
   }
 
   async function planNotification(subscription, lastTimeout) {
+    if(process.env.NODE_ENV == 'development')
+      console.log("planNotification", {subscription, lastTimeout});
     const maxTimeout = 60 * 60 * 1000;
     const firstOffset = 10 * 60 * 1000;
     let now = Date.now();
