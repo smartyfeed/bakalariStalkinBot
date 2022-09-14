@@ -1,5 +1,5 @@
-const generic = require('../bakalariStalkin/util/generic.js');
 const getTT = require('../bakalariStalkin/util/getClassTT.js');
+const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
 const utils = require('../bakalariStalkin/util/generic.js');
 const cli = require('cli');
 const cliui = require('cliui');
@@ -26,7 +26,8 @@ module.exports = {
       .sort()
       .filter((v, i, self) => self.indexOf(v) === i) || [];
 
-    if (!generic.getClassInfo(className)) {
+    await updateClassIDs();
+    if (!utils.getClassInfo(className)) {
       cli.error(`Incorrect class (${className}) entered by ${interaction.user.username} | ${interaction.user.id}`)
       return interaction.reply({
         content: `Incorrect class: ${className}`,
