@@ -89,6 +89,7 @@ async function stalk() {
       return;
     }
     subscription.info = updatedSub[0];
+    subscription.info.groups = JSON.parse(subscription.info.groups);
     var timeout = 0;
 
     var timetable = timetables[`${subscription.info.bakaServer}\0${subscription.info.classID}`].timetable
