@@ -1,6 +1,6 @@
 require('./bakalariStalkin/util/updateClassIDs.js');
 const fs = require('fs');
-
+const chalk = require('chalk');
 const stalk = require('./stalk.js');
 const apiServer = require('./apiServer.js');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
@@ -67,6 +67,15 @@ client.on('interactionCreate', async interaction => {
       ephemeral: true,
     });
   }
+});
+
+client.on('debug', debug => {
+  if([
+    "[HeartbeatTimer] Sending a heartbeat.",
+    "Heartbeat acknowledged, latency of ",
+  ].some(x => debug.includes(x)))
+    return; // ignore common logs
+  console.log(chalk.gray('[djsd] ' + debug));
 });
 
 db.serialize(function() {
