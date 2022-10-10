@@ -106,6 +106,7 @@ async function stalk() {
 
       if (upcomingEvents.length == 0) {
         timeout = maxTimeout;
+        cli.info(`Setting timeout for ${timeout}ms`);
         setTimeout(() => planNotification(subscription, timeout), timeout);
         return;
       }
@@ -114,12 +115,14 @@ async function stalk() {
 
       if (upcomingEvent.beginTimestamp < now && now < upcomingEvent.endTimestamp) {
         timeout = upcomingEvent.endTimestamp - now;
+        cli.info(`Setting timeout for ${timeout}ms`);
         setTimeout(() => planNotification(subscription, timeout), timeout);
         return;
       }
 
       if (lastTimeout == maxTimeout && upcomingEvent.beginTimestamp - now < maxTimeout) {
         timeout = upcomingEvent.beginTimestamp - now - firstOffset;
+        cli.info(`Setting timeout for ${timeout}ms`);
         setTimeout(() => planNotification(subscription, timeout), timeout);
         return;
       }
@@ -132,9 +135,11 @@ async function stalk() {
           }
         }
         timeout = Math.min(upcomingEvent.endTimestamp - now, maxTimeout);
+        cli.info(`Setting timeout for ${timeout}ms`);
         setTimeout(() => planNotification(subscription, timeout), timeout);
       } else {
         timeout = Math.min(upcomingEvent.beginTimestamp - now - firstOffset, maxTimeout);
+        cli.info(`Setting timeout for ${timeout}ms`);
         setTimeout(() => planNotification(subscription, timeout), timeout);
       }
     } else {
@@ -149,6 +154,7 @@ async function stalk() {
 
       timeout = upcomingEvents ? Math.min(upcomingEvent.beginTimestamp - now, maxTimeout) : maxTimeout;
 
+      cli.info(`Setting timeout for ${timeout}ms`);
       setTimeout(() => planNotification(subscription, timeout), timeout);
     }
   }
