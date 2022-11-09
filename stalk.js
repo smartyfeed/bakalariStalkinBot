@@ -37,18 +37,22 @@ async function stalk() {
   }
 
   async function updateTTs() {
-    let start = performance.now();
-    let successes = 0, fails = 0;
-    for (let item of classes) {
-      try {
-        await updateTT(item);
-        successes++;
-      } catch (e) {
-        cli.error(e);
-        fails++;
+    try {
+      let start = performance.now();
+      let successes = 0, fails = 0;
+      for (let item of classes) {
+        try {
+          await updateTT(item);
+          successes++;
+        } catch (e) {
+          cli.error(e);
+          fails++;
+        }
       }
+      cli.info(`Updated ${successes} TTs, ${fails} failed in ${~~(performance.now() - start)}ms`);
+    } catch (e) {
+      console.log("SANITY: updateTTs failed to catch error!");
     }
-    cli.info(`Updated ${successes} TTs, ${fails} failed in ${~~(performance.now() - start)}ms`);
     setTimeout(updateTTs, 15 * 60 * 1000);
   }
 
