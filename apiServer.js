@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const fetch = require('node-fetch');
 const cli = require('cli');
@@ -21,6 +22,8 @@ module.exports.start = async function({ port, clientSecret }) {
   }
 
   app.use(cookieParser());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
 
   app.get('/', function (req, res) {
     res.send('API not documented, to chcete moc');
@@ -95,6 +98,9 @@ module.exports.start = async function({ port, clientSecret }) {
 
   app.get('/user', require('./api/user'));
   app.get('/list', require('./api/list'));
+  app.get('/settings', require('./api/settings'));
+
+  app.post('/updateSettings', require('./api/updateSettings'));
 
   app.listen(port);
   cli.ok(`API server listening on ${port}`);
