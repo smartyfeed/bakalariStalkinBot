@@ -1,4 +1,6 @@
 const db = require("../lib/dbpromise");
+const generic = require('../bakalariStalkin/util/generic.js');
+const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
 
 module.exports = async function(req, res) {
   var { user } = req.session;
@@ -9,5 +11,17 @@ module.exports = async function(req, res) {
   }
 
   settings = await db.get("SELECT * FROM userSettings WHERE userID = ?", user.id);
-  res.json(settings);
+  try {
+    res.json({
+      settings: settings,
+      classes: await updateClassIDs.fetchPairs(settings.bakaServer),
+      groups: await generic.getPossibleGroups(settings.className, true, settings.bakaServer)
+    });
+  } catch(e) {
+    console.log(e);
+    res.status(400).json({
+      error: "E_UNKNOWN_ERROR",
+      message: "Unexpected error occured",
+    });
+  }
 }
