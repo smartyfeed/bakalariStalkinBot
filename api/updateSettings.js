@@ -14,13 +14,12 @@ module.exports = async function (req, res) {
     });
   }
   var className = req.body.className;
-  if (className === null) {
+  if (!className) {
     return res.status(400).json({
       error: "E_BAD_CLASS_NAME",
       message: "Provided class is not valid",
     });
   }
-  className = className.toUpperCase();
 
   let possible_groups = [];
   try {
