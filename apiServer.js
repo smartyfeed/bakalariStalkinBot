@@ -101,8 +101,6 @@ module.exports.start = async function({ port, clientSecret }) {
   app.get('/settings', require('./api/settings'));
 
   app.post('/updateSettings', require('./api/updateSettings'));
-  app.post('/groups', require('./api/groups'));
-  app.post('/server', require('./api/serverAndClasses'));
 
   app.listen(port);
   cli.ok(`API server listening on ${port}`);
