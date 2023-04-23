@@ -1,42 +1,77 @@
 const db = require("../lib/dbpromise");
 const getBaseUrl = require("../bakalariStalkin/util/getBaseUrl.js");
+const updateClassIDs = require("../bakalariStalkin/util/updateClassIDs.js");
 const generic = require("../bakalariStalkin/util/generic.js");
 
 module.exports = async function (req, res) {
-  var { user } = req.session;
+  let { user } = req.session;
 
-  var bakaServer = await getBaseUrl(req.body.bakaServer);
+  let data = req.body;
 
-  if (bakaServer === null || bakaServer === undefined) {
-    return res.status(400).json({
-      error: "E_BAD_BAKA_SERVER",
-      message: "Provided Bakaláři server is not valid",
-    });
-  }
-  var className = req.body.className;
-  if (!className) {
-    return res.status(400).json({
-      error: "E_BAD_CLASS_NAME",
-      message: "Provided class is not valid",
-    });
-  }
+  console.log(data);
 
-  let possible_groups = [];
-  try {
-    possible_groups = await generic.getPossibleGroups(
-      className,
-      true,
-      bakaServer
-    );
-  } catch (e) {
-    console.log(e);
-    return res.status(400).json({
-      error: "E_BAD_CLASS_NAME",
-      message: "Provided class is not valid",
+  if (data.step == 1) {
+    let bakaServer = await getBaseUrl(req.body.bakaServer);
+
+    if (bakaServer === null || bakaServer === undefined) {
+      return res.status(400).json({
+        error: "E_BAD_BAKA_SERVER",
+        message: "Provided Bakaláři server is not valid",
+        step: 1,
+      });
+    }
+
+    return res.status(200).json({
+      step: 2,
+      bakaServer: bakaServer,
+      classes: await updateClassIDs.fetchPairs(bakaServer),
     });
   }
 
-  var groups = req.body.groups;
+  if (data.step == 2) {
+    let className = data.className;
+    let bakaServer = data.bakaServer;
+    if (!className) {
+      return res.status(400).json({
+        error: "E_BAD_CLASS_NAME",
+        message: "Provided class is not valid",
+        step: 2,
+      });
+    }
+
+    let possible_groups = [];
+    try {
+      possible_groups = await generic.getPossibleGroups(
+        className,
+        true,
+        bakaServer
+      );
+    } catch (e) {
+      console.log(e);
+      return res.status(400).json({
+        error: "E_BAD_CLASS_NAME",
+        message: "Provided class is not valid",
+        step: 2,
+      });
+    }
+    return res.status(200).json({
+      step: 3,
+      bakaServer: bakaServer,
+      classes: await updateClassIDs.fetchPairs(bakaServer),
+      groups: possible_groups,
+      className: className,
+    });
+  }
+
+  let groups = data.groups;
+  let className = data.className;
+  let bakaServer = data.bakaServer;
+
+  let possible_groups = await generic.getPossibleGroups(
+    className,
+    true,
+    bakaServer
+  );
 
   if (!groups) {
     groups = [];
@@ -66,7 +101,7 @@ module.exports = async function (req, res) {
     [className, JSON.stringify(groups), bakaServer, user.id]
   );
 
-  return res.status(200).json({
-    message: "OK",
+  return res.status(303).json({
+    redirect: "/settings",
   });
 };
