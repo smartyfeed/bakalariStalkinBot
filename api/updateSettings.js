@@ -35,7 +35,7 @@ module.exports = async function (req, res) {
       return res.status(400).json({
         error: "E_BAD_CLASS_NAME",
         message: "Provided class is not valid",
-        step: 2,
+        step: 1,
       });
     }
 
@@ -51,7 +51,7 @@ module.exports = async function (req, res) {
       return res.status(400).json({
         error: "E_BAD_CLASS_NAME",
         message: "Provided class is not valid",
-        step: 2,
+        step: 1,
       });
     }
     return res.status(200).json({
@@ -91,6 +91,7 @@ module.exports = async function (req, res) {
         return res.status(400).json({
           error: "E_BAD_GROUPS",
           message: "Provided groups are not valid",
+          step: 1,
         });
       }
     }
