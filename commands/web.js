@@ -11,7 +11,7 @@ module.exports = {
     const token = api.createSession(owner, true);
 
     return interaction.reply({
-      content: `Here y'go: ${api.redirectURI}?t=${token}`,
+      content: `Here y'go: <${api.redirectURI}?t=${token}>`,
       ephemeral: true,
     });
   },
