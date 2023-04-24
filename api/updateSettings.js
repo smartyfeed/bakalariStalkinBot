@@ -63,45 +63,46 @@ module.exports = async function (req, res) {
     });
   }
 
-  let groups = data.groups;
-  let className = data.className;
-  let bakaServer = data.bakaServer;
+  if (data.step == 3) {
+    let groups = data.groups;
+    let className = data.className;
+    let bakaServer = data.bakaServer;
 
-  let possible_groups = await generic.getPossibleGroups(
-    className,
-    true,
-    bakaServer
-  );
+    let possible_groups = await generic.getPossibleGroups(
+      className,
+      true,
+      bakaServer
+    );
 
-  if (!groups) {
-    groups = [];
-  }
-
-  if (!Array.isArray(groups)) {
-    if (groups != "") {
-      groups = [groups];
-    } else {
+    if (!groups) {
       groups = [];
     }
-  }
 
-  if (groups.length != 0) {
-    for (var group of groups) {
-      if (!possible_groups.includes(group)) {
-        return res.status(400).json({
-          error: "E_BAD_GROUPS",
-          message: "Provided groups are not valid",
-          step: 1,
-        });
+    if (!Array.isArray(groups)) {
+      if (groups != "") {
+        groups = [groups];
+      } else {
+        groups = [];
       }
     }
+
+    if (groups.length != 0) {
+      for (var group of groups) {
+        if (!possible_groups.includes(group)) {
+          return res.status(400).json({
+            error: "E_BAD_GROUPS",
+            message: "Provided groups are not valid",
+            step: 1,
+          });
+        }
+      }
+    }
+
+    db.run(
+      "UPDATE userSettings SET className = ?, groups = ?, bakaServer = ?, dailyNotification = 0 WHERE userID = ?",
+      [className, JSON.stringify(groups), bakaServer, user.id]
+    );
   }
-
-  db.run(
-    "UPDATE userSettings SET className = ?, groups = ?, bakaServer = ?, dailyNotification = 0 WHERE userID = ?",
-    [className, JSON.stringify(groups), bakaServer, user.id]
-  );
-
   return res.status(303).json({
     redirect: "/settings",
   });
