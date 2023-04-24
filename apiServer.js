@@ -83,6 +83,14 @@ module.exports.start = async function({ port, clientSecret }) {
     }
   });
 
+  app.get('/logout', async function (req, res) {
+    var token  = req.query?.token || req.cookies?.token;
+    if(token && sessions.has(token)) {
+      sessions.delete(token);
+    }
+    res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000" : "/");
+  });
+
   app.use(function (req, res, next) {
     var token  = req.query?.token || req.cookies?.token;
     if(token && sessions.has(token) && !sessions.get(token).isLink) {
