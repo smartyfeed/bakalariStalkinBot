@@ -2,7 +2,7 @@ const db = require("../lib/dbpromise");
 const getBaseUrl = require("../bakalariStalkin/util/getBaseUrl.js");
 const updateClassIDs = require("../bakalariStalkin/util/updateClassIDs.js");
 const generic = require("../bakalariStalkin/util/generic.js");
-const stalk = require('../stalk.js');
+const stalk = require("../stalk.js");
 
 module.exports = async function (req, res) {
   let { user } = req.session;
@@ -126,42 +126,50 @@ module.exports = async function (req, res) {
     });
   }
 
-  let groups = data.groups;
-  let className = data.className;
-  let bakaServer = data.bakaServer;
-  let notificationOnClassStart = data.notificationOnClassStart;
-  let label = data.label;
-  let oldId = data.oldId;
+  if (data.step == 4) {
+    let groups = data.groups;
+    let className = data.className;
+    let bakaServer = data.bakaServer;
+    let notificationOnClassStart = data.notificationOnClassStart;
+    let label = data.label;
+    let oldId = data.oldId;
 
-  if (!groups) {
-    groups = [];
-  }
-
-  if (!Array.isArray(groups)) {
-    if (groups != "") {
-      groups = [groups];
-    } else {
+    if (!groups) {
       groups = [];
     }
+
+    if (!Array.isArray(groups)) {
+      if (groups != "") {
+        groups = [groups];
+      } else {
+        groups = [];
+      }
+    }
+
+    if (!label) {
+      label = className;
+    }
+
+    if (oldId != "new") {
+      db.run("DELETE FROM subscriptions WHERE id = ?", [oldId]);
+    }
+
+    let result = await db.run(
+      "INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [
+        user.id,
+        generic.getClassInfo(className, false, bakaServer).id,
+        JSON.stringify(groups),
+        0,
+        label,
+        bakaServer,
+        notificationOnClassStart ? 1 : 0,
+      ]
+    );
+
+    await stalk.initSubscription(result.lastID);
   }
-
-  if (!label) {
-    label = className;
-  }
-
-  if (oldId != "new") {
-    db.run("DELETE FROM subscriptions WHERE id = ?", [oldId]);
-  }
-
-  let result = await db.run(
-    "INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [user.id, generic.getClassInfo(className, false, bakaServer).id, JSON.stringify(groups), 0, label, bakaServer, notificationOnClassStart ? 1 : 0]
-  );
-
-  await stalk.initSubscription(result.lastID);
-
   return res.status(303).json({
     redirect: "/",
   });
-
 };
