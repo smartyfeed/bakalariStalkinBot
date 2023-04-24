@@ -1,0 +1,21 @@
+name: Update to new version
+run-name: ${{ gitea.actor }} is updating the bot
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+    steps:
+      - run: "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+      - run: eval $(ssh-agent -s)
+      - run: mkdir -p ~/.ssh
+      - run: chmod 700 ~/.ssh
+      - run: echo "$SSH_PRIVATE_KEY" | base64 -di > ~/.ssh/id_rsa
+      - run: chmod 400 ~/.ssh/id_rsa
+      - run: ssh-keyscan $SSH_HOST > ~/.ssh/known_hosts
+      - run: chmod 644 ~/.ssh/known_hosts
+      - run: ssh $SSH_USER@$SSH_HOST "cd /home/server/discord-bots/bakalaristalkinbot && sudo -u bot-bakalari git pull --recurse-submodules"
+      - run: ssh $SSH_USER@$SSH_HOST "sudo systemctl restart bot-bakalariStalkin.service"
