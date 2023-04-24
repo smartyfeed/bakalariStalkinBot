@@ -52,7 +52,7 @@ module.exports = {
 
     var onClassStart = interaction.options.getBoolean('onclassstart');
 
-    if (!generic.getClassInfo(className, false, server)) {
+    if (!(await generic.getClassInfo(className, false, server))) {
       cli.error(`Incorrect class (${className}, ${server}) entered by ${interaction.user.username} | ${interaction.user.id}`)
       return interaction.reply({
         content: `Incorrect class: ${className}`,
@@ -68,14 +68,14 @@ module.exports = {
         });
       }
     }
-    let args = [interaction.user.id, generic.getClassInfo(className, false, server).id, JSON.stringify(groups), 0, label, server, onClassStart ? 1 : 0];
+    let args = [interaction.user.id, await generic.getClassInfo(className, false, server).id, JSON.stringify(groups), 0, label, server, onClassStart ? 1 : 0];
     if(process.env.NODE_ENV == 'development')
       console.log("sub args", args);
     let result = await db.run("INSERT INTO subscriptions(userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) values(?, ?, ?, ?, ?, ?, ?)", args);
 
     await stalk.initSubscription(result.lastID);
 
-    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${generic.getClassInfo(className, false, server).id}) ${groups}, server: ${server} | ID: ${interaction.user.id}`)
+    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${await generic.getClassInfo(className, false, server).id}) ${groups}, server: ${server} | ID: ${interaction.user.id}`)
     return interaction.reply({
       content: `Successfully started stalking! :sunglasses:`,
       ephemeral: true

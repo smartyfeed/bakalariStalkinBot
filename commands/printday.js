@@ -27,7 +27,7 @@ module.exports = {
       .filter((v, i, self) => self.indexOf(v) === i) || [];
 
     await updateClassIDs();
-    if (!utils.getClassInfo(className)) {
+    if (!(await utils.getClassInfo(className))) {
       cli.error(`Incorrect class (${className}) entered by ${interaction.user.username} | ${interaction.user.id}`)
       return interaction.reply({
         content: `Incorrect class: ${className}`,
@@ -43,7 +43,7 @@ module.exports = {
         });
       }
     }
-    var rozvrh = await getTT(utils.getClassInfo(className).id);
+    var rozvrh = await getTT(await utils.getClassInfo(className).id);
     var day = rozvrh
       .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(offset ? offset : 0))
       .filter(utils.filterGroups(groups));

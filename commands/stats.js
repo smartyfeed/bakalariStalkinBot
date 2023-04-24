@@ -28,7 +28,7 @@ module.exports = {
     let subs = await db.all("SELECT * FROM subscriptions");
 
     subs.map(sub => {
-      sub.className = generic.getClassInfo(sub.classID, false, sub.bakaServer).name
+      sub.className = await generic.getClassInfo(sub.classID, false, sub.bakaServer).name
     });
 
     for (let sub of subs) {

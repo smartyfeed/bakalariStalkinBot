@@ -21,7 +21,7 @@ module.exports = async function (req, res) {
   
   sub.groups = JSON.parse(sub.groups);
 
-  sub.className = generic.getClassInfo(sub.classID, false, sub.bakaServer).name;
+  sub.className = await generic.getClassInfo(sub.classID, false, sub.bakaServer).name;
   
   console.log(sub);
 
