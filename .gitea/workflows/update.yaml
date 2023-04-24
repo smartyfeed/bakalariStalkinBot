@@ -2,7 +2,7 @@ name: Update to new version
 run-name: ${{ gitea.actor }} is updating the bot
 on: [push]
 jobs:
-  deploy:
+  update:
     runs-on: ubuntu-latest
     env:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
