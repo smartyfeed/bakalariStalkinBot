@@ -8,8 +8,6 @@ module.exports = async function (req, res) {
 
   let data = req.body;
 
-  console.log(data);
-
   if (data.step == 1) {
     let bakaServer = await getBaseUrl(req.body.bakaServer);
 
