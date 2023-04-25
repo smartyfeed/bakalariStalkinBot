@@ -17,5 +17,5 @@ jobs:
       - run: chmod 400 ~/.ssh/id_rsa
       - run: ssh-keyscan $SSH_HOST > ~/.ssh/known_hosts
       - run: chmod 644 ~/.ssh/known_hosts
-      - run: ssh $SSH_USER@$SSH_HOST "cd /home/server/discord-bots/bakalaristalkinbot && sudo -u bot-bakalari git pull --recurse-submodules"
+      - run: ssh $SSH_USER@$SSH_HOST "cd /home/server/discord-bots/bakalaristalkinbot && sudo -u bot-bakalari git pull && sudo -u bot-bakalari git submodule update --recursive --remote"
       - run: ssh $SSH_USER@$SSH_HOST "sudo systemctl restart bot-bakalariStalkin.service"
