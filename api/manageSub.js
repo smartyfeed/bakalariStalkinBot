@@ -158,7 +158,7 @@ module.exports = async function (req, res) {
       "INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         user.id,
-        await generic.getClassInfo(className, false, bakaServer).id,
+        (await generic.getClassInfo(className, false, bakaServer)).id,
         JSON.stringify(groups),
         0,
         label,

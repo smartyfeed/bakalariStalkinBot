@@ -43,7 +43,7 @@ module.exports = {
         });
       }
     }
-    var rozvrh = await getTT(await utils.getClassInfo(className).id);
+    var rozvrh = await getTT((await utils.getClassInfo(className)).id);
     var day = rozvrh
       .filter(atom => atom.dayOfWeekAbbrev == utils.dayOfWeekAbbrev(offset ? offset : 0))
       .filter(utils.filterGroups(groups));

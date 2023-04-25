@@ -23,7 +23,7 @@ module.exports = {
     for (sub of activeSubs) {
       await updateClassIDs(sub.bakaServer);
       
-      output += `**${sub.label}** | ${await generic.getClassInfo(sub.classID, false, sub.bakaServer).name} ${sub.groups?sub.groups:''}`;
+      output += `**${sub.label}** | ${(await generic.getClassInfo(sub.classID, false, sub.bakaServer)).name} ${sub.groups?sub.groups:''}`;
       if (sub.pausedUntil && sub.pausedUntil >= new Date().getTime()) {
         var pauseEnd = new Date(sub.pausedUntil);
         var year = pauseEnd.getFullYear();

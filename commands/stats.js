@@ -27,9 +27,9 @@ module.exports = {
     var stalkers = {};
     let subs = await db.all("SELECT * FROM subscriptions");
 
-    subs.map(async (sub) => {
-      sub.className = await generic.getClassInfo(sub.classID, false, sub.bakaServer).name
-    });
+    for (let sub of subs) {
+      sub.className = (await generic.getClassInfo(sub.classID, false, sub.bakaServer)).name;
+    }
 
     for (let sub of subs) {
       if (!stalkers[sub.userID]) {
