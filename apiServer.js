@@ -108,6 +108,7 @@ module.exports.start = async function({ port, clientSecret }) {
   app.get('/user', require('./api/user'));
   app.get('/list', require('./api/list'));
   app.get('/settings', require('./api/settings'));
+  app.get('/admin', require('./api/admin'));
 
   app.post('/updateSettings', require('./api/updateSettings'));
   app.post('/sub', require('./api/sub'));
