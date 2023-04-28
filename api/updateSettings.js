@@ -8,6 +8,13 @@ module.exports = async function (req, res) {
 
   let data = req.body;
 
+  if (data.step == 0) {
+    return res.status(200).json({
+      step: 1,
+      bakaServer: req.body.bakaServer,
+    });
+  }
+
   if (data.step == 1) {
     let bakaServer = await getBaseUrl(req.body.bakaServer);
 
