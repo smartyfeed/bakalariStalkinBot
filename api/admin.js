@@ -8,6 +8,7 @@ module.exports = async function(req, res) {
 
   if (!isAdmin) {
     return res.status(403).json({
+      status: 403,
       error: "E_UNAUTHORIZED",
       message: "You are not authorized to access this",
     });
@@ -30,6 +31,6 @@ module.exports = async function(req, res) {
     sub.groups = JSON.parse(sub.groups);
     stalkers[sub.userID].subs.push(sub);
   }
-  
-  res.json({stalkers: stalkers});
+
+  res.json({status: 200, stalkers: stalkers});
 }
