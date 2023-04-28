@@ -9,9 +9,10 @@ module.exports.redirectURI = "https://bakalari.smartyfeed.me/api/auth";
 
 var sessions = new Map();
 module.exports.sessions = sessions;
+var client;
 
 module.exports.start = async function({ port, clientSecret }) {
-  const { client } = require('./index');
+  client = require('./index').client  ;
   const app = express();
 
   await client.application.fetch();
@@ -125,6 +126,7 @@ module.exports.createSession = function(user, isLink) {
   sessions.set(stalkerToken, session);
   session.user = user;
   session.isLink = isLink;
+  session.isAdmin = client.application.owner.members?.find(member => member.user.id == user.id) ? true : false;
   if(isLink)
     session.authBefore = Date.now() + 5 * 60 * 1000;
   cli.ok(`Made ${isLink ? "auth link" : "session"} for ${user.username}#${user.discriminator}`);
