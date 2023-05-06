@@ -14,6 +14,7 @@ async function stalk() {
   var classes = new Set();
   var timetables = {};
 
+  module.exports.timetables = timetables;
 
   await updateTTs();
 
