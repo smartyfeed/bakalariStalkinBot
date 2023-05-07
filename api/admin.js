@@ -61,9 +61,9 @@ module.exports = async function (req, res) {
   stats.env = {
     node: process.version,
     commit: hash.substr(0, 6),
-    uptime: process.uptime(),
+    uptime: Math.floor(process.uptime() * 1000),
   };
-  stats.env.uptime = `${stats.env.uptime} (${ms(stats.env.uptime * 1000)})`;
+  stats.env.uptime = `${stats.env.uptime} (${ms(stats.env.uptime)})`;
 
   stats.stalk = {
     subs: subs.length,
