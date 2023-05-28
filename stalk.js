@@ -10,6 +10,8 @@ module.exports.stalk = stalk;
 async function stalk() {
   module.exports.initSubscription = initSubscription;
 
+  const cache = module.exports.cache;
+
   var subscriptions = {};
   var classes = new Set();
   var timetables = {};
@@ -27,10 +29,10 @@ async function stalk() {
   async function initSubscription(subscriptionID) {
     let subscription = await db.get("SELECT * FROM subscriptions WHERE id = ?", subscriptionID);
     subscription.groups = JSON.parse(subscription.groups);
-    subscriptions[subscription.id] = {
+    await cache.json.set('subscriptions', subscription.id, {
       info: subscription,
       lastCheck: Date.now()
-    };
+    });
     let classString = `${subscription.bakaServer}\0${subscription.classID}`
     classes.add(classString);
     await updateTT(classString);
@@ -58,18 +60,13 @@ async function stalk() {
   }
 
   async function updateTT(item) {
-    if (!timetables[item]) {
-      timetables[item] = {
-        timetable: []
-      };
+    if (await cache.json.get(item) == null || Date.now() - (await cache.json.get(item)).lastUpdate > 5 * 60 * 1000) {
+      var parts = item.split("\0");
+      await cache.json.set(item, '$', {
+        timetable: await getTT(parts[1], parts[0]),
+        lastUpdate: Date.now()
+      });
     }
-    if (Date.now() - timetables[item].lastUpdate < 5 * 60 * 1000) {
-      return;
-    }
-    timetables[item].lastUpdate = Date.now();
-    let parts = item.split("\0");
-    let timetable = await getTT(parts[1], parts[0]);
-    timetables[item].timetable = timetable;
   }
 
   async function fetchSubscriptions() {

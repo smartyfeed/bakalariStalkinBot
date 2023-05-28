@@ -4,15 +4,25 @@ const chalk = require('chalk');
 const stalk = require('./stalk.js');
 const apiServer = require('./apiServer.js');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
+const redis = require('redis');
 const {
   Client, Collection, Intents,
 } = require('discord.js');
 const {
-  token, apiPort, clientSecret,
+  token, apiPort, clientSecret, redisAddress, redisPort
 } = require('./config.json');
 const {
   joinVoiceChannel
 } = require('@discordjs/voice');
+
+const cache = redis.createClient({
+  socket: {
+      host: redisAddress,
+      port: redisPort
+  },
+  database: 1,
+  name: 'bakalariStalkinBot'
+});
 
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./save.db');
@@ -24,6 +34,9 @@ stalk.client = client;
 module.exports.client = client;
 module.exports.db = db;
 
+stalk.cache = cache;
+module.exports.cache = cache;
+
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
@@ -32,6 +45,11 @@ for (const file of commandFiles) {
   command.client = client;
   client.commands.set(command.data.name, command);
 }
+
+cache.on('error', err => console.log('Redis Server Error', err));
+cache.once('ready', () => {
+  console.log('Connected to Redis at ' + redisAddress + ':' + redisPort + '!');
+});
 
 client.once('ready', async () => {
   console.log('Ready as "' + client?.user?.username + "#" + client?.user?.discriminator + '"');
@@ -46,8 +64,8 @@ client.once('ready', async () => {
   };
   setInterval(presenceUpdater, 60 * 60 * 1000);
   presenceUpdater();
+  await cache.connect();
   stalk.stalk();
-  
   apiServer.start({ port: apiPort, clientSecret });
 });
 
