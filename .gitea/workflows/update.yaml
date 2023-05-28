@@ -1,6 +1,9 @@
 name: Update to new version
 run-name: ${{ gitea.actor }} is updating the bot
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
   update:
     runs-on: ubuntu-latest
