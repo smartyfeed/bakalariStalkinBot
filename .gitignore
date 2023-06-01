@@ -6,3 +6,5 @@ subscriptions.json
 .git-credentials
 save.db
 .cache
+matrix_storage.json
+matrix_crypto_
