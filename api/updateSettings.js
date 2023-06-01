@@ -104,8 +104,8 @@ module.exports = async function (req, res) {
     }
 
     db.run(
-      "UPDATE userSettings SET className = ?, groups = ?, bakaServer = ?, dailyNotification = 0 WHERE userID = ?",
-      [className, JSON.stringify(groups), bakaServer, user.id]
+      "UPDATE userSettings SET className = ?, groups = ?, bakaServer = ?, dailyNotification = 0 WHERE userID = ? AND platform = ?",
+      [className, JSON.stringify(groups), bakaServer, user.id, user.platform]
     );
   }
   return res.status(303).json({

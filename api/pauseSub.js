@@ -6,11 +6,11 @@ module.exports = async function (req, res) {
 
   if (req.body.unpause) {
     if (req.body.id == "all") {
-      await db.run("UPDATE subscriptions SET pausedUntil = 0 WHERE userID = ?", [user.id]);
+      await db.run("UPDATE subscriptions SET pausedUntil = 0 WHERE userID = ? AND platform = ?", [user.id, user.platform]);
     } else {
       var sub = await db.get(
-        "SELECT * FROM subscriptions WHERE userID = ? AND id = ?",
-        [user.id, req.body.id]
+        "SELECT * FROM subscriptions WHERE userID = ? AND id = ? AND platform = ?",
+        [user.id, req.body.id, user.platform]
       );
 
       if (!sub) {
@@ -29,11 +29,11 @@ module.exports = async function (req, res) {
   }
 
   if (req.body.id == "all") {
-    await db.run("UPDATE subscriptions SET pausedUntil = ? WHERE userID = ?", [date.getTime(), user.id]);
+    await db.run("UPDATE subscriptions SET pausedUntil = ? WHERE userID = ? AND platform = ?", [date.getTime(), user.id, user.platform]);
   } else {
     var sub = await db.get(
-      "SELECT * FROM subscriptions WHERE userID = ? AND id = ?",
-      [user.id, req.body.id]
+      "SELECT * FROM subscriptions WHERE userID = ? AND id = ? AND platform = ?",
+      [user.id, req.body.id, user.platform]
     );
 
     if (!sub) {

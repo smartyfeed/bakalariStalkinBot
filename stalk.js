@@ -2,6 +2,8 @@ const cli = require('cli');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const utils = require('./bakalariStalkin/util/generic.js');
 const db = require("./lib/dbpromise");
+const telegram = require('./index').tg;
+const {markdownv2: format} = require('telegram-format');
 const {
   MessageEmbed
 } = require('discord.js');
@@ -168,19 +170,37 @@ async function stalk() {
     if (subscription.info.pausedUntil > Date.now()) {
       return;
     }
-    let user = await module.exports.client.users.fetch(subscription.info.userID);
-    const lukMomIhaveEmbed = new MessageEmbed()
-      .setColor(event.changeinfo !== "" ? '#ff3300' : '#0099ff')
-      .setTitle(subscription.info.label)
-      .setDescription(`${event.beginTime} - ${event.endTime} | ${event.room}\n${event.subjectName}${event.group?` | ${event.group}`:``}\n${event.teacher}`)
-    try {
-      await user.send({
-        embeds: [lukMomIhaveEmbed]
-      });
-      cli.ok(`Sent notification "${subscription.info.label}" to user ${user?.tag} ( <@${subscription.info.userID}> )`);
-    } catch (e) {
-      cli.error(`Sending notification to user ${user?.tag} ( <@${subscription.info.userID}> ) failed:
-    ${e.message}`);
+    switch(subscription.info.platform) {
+      case 0:
+        let user = await module.exports.client.users.fetch(subscription.info.userID);
+        const lukMomIhaveEmbed = new MessageEmbed()
+          .setColor(event.changeinfo !== "" ? '#ff3300' : '#0099ff')
+          .setTitle(subscription.info.label)
+          .setDescription(`${event.beginTime} - ${event.endTime} | ${event.room}\n${event.subjectName}${event.group?` | ${event.group}`:``}\n${event.teacher}`)
+        try {
+          await user.send({
+            embeds: [lukMomIhaveEmbed]
+          });
+          cli.ok(`Sent notification "${subscription.info.label}" to user ${user?.tag} ( <@${subscription.info.userID}> )`);
+        } catch (e) {
+          cli.error(`Sending notification to user ${user?.tag} ( <@${subscription.info.userID}> ) failed:
+        ${e.message}`);
+        }
+        break;
+      case 1:
+        let message = `
+          ${format.bold(format.escape(subscription.info.label))}\n${format.escape(event.beginTime)} \\- ${format.escape(event.endTime)} \\| ${format.escape(event.room)}\n${format.escape(event.subjectName)}${event.group?` \\| ${format.escape(event.group)}`:``}\n${format.escape(event.teacher)}\n${format.escape(event.changeinfo == "" ? "" : event.changeinfo)}`;
+        try {
+          telegram.telegram.sendMessage(subscription.info.userID, {text: message, parse_mode: 'MarkdownV2' });
+          cli.ok(`Sent notification "${subscription.info.label}" to user ${subscription.info.userID}`);
+        } catch (e) {
+          cli.error(`Sending notification to user ${subscription.info.userID} failed:
+        ${e.message}`);
+        }
+        break;
+      default:
+        cli.error(`Unknown platform ${subscription.info.platform}`);
+        break;
     }
   }
 }

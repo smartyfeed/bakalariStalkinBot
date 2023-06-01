@@ -12,7 +12,7 @@ module.exports.sessions = sessions;
 var client;
 
 module.exports.start = async function({ port, clientSecret }) {
-  client = require('./index').client  ;
+  client = require('./index').client;
   const app = express();
 
   await client.application.fetch();
@@ -73,7 +73,16 @@ module.exports.start = async function({ port, clientSecret }) {
         },
       });
 
-      let stalkerToken = module.exports.createSession(await userResult.json(), false);
+      let discordUser = await userResult.json();
+      
+      let user = {
+        id: discordUser.id,
+        username: discordUser.username,
+        avatar: `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=256`,
+        platform: 0,
+      }
+
+      let stalkerToken = module.exports.createSession(user, false);
       res.cookie("token", stalkerToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + stalkerToken : "/");
     } catch (error) {
       console.error(error)

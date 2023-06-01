@@ -4,8 +4,8 @@ module.exports = async function (req, res) {
   var { user } = req.session;
 
   var sub = await db.get(
-    "SELECT * FROM subscriptions WHERE userID = ? AND id = ?",
-    [user.id, req.body.id]
+    "SELECT * FROM subscriptions WHERE userID = ? AND id = ? AND platform = ?",
+    [user.id, req.body.id, user.platform]
   );
 
   if (!sub) {

@@ -4,7 +4,7 @@ const generic = require('../bakalariStalkin/util/generic.js');
 
 module.exports = async function(req, res) {
   var { user } = req.session;
-  var activeSubs = await db.all("SELECT * FROM subscriptions WHERE userID = ?", user.id);
+  var activeSubs = await db.all("SELECT * FROM subscriptions WHERE userID = ? AND platform = ?", [user.id, user.platform]);
   for (let sub of activeSubs) {
     sub.className = (await generic.getClassInfo(sub.classID, false, sub.bakaServer)).name;
   }

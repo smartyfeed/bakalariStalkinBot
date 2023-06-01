@@ -153,7 +153,7 @@ module.exports = async function (req, res) {
     }
 
     let result = await db.run(
-      "INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart, platform) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       [
         user.id,
         (await generic.getClassInfo(className, false, bakaServer)).id,
@@ -162,6 +162,7 @@ module.exports = async function (req, res) {
         label,
         bakaServer,
         notificationOnClassStart ? 1 : 0,
+        user.platform,
       ]
     );
 

@@ -3,17 +3,17 @@ const db = require("../lib/dbpromise");
 module.exports = async function (req, res) {
   var { user } = req.session;
   var settings = await db.get(
-    "SELECT * FROM userSettings WHERE userID = ?",
-    user.id
+    "SELECT * FROM userSettings WHERE userID = ? AND platform = ?",
+    [user.id, user.platform]
   );
 
   if (!settings) {
-    await db.run("INSERT INTO userSettings(userID) values(?)", user.id);
+    await db.run("INSERT INTO userSettings(userID, platform) values(?, ?)", [user.id, user.platform]);
   }
 
   settings = await db.get(
-    "SELECT * FROM userSettings WHERE userID = ?",
-    user.id
+    "SELECT * FROM userSettings WHERE userID = ? AND platform = ?",
+    [user.id, user.platform]
   );
   try {
     settings.groups = JSON.parse(settings.groups);
