@@ -5,7 +5,6 @@ const stalk = require('./stalk.js');
 const apiServer = require('./apiServer.js');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const fetch = require('node-fetch');
-const {markdownv2: format} = require('telegram-format');
 const {
   Client, Collection, Intents,
 } = require('discord.js');
