@@ -160,6 +160,8 @@ matrixBot.on("room.event", async (roomId, event) => {
       await matrixBot.forgetRoom(roomId);
       console.log("Purging subs for room " + roomId);
       await db.run("DELETE FROM subscriptions WHERE userID = ?", [roomId]);
+      console.log("Purging user settings for room " + roomId);
+      await db.run("DELETE FROM userSettings WHERE userID = ?", [roomId]);
     }
   } catch(e) {
     console.error(e);
