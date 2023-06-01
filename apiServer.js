@@ -159,7 +159,7 @@ module.exports.start = async function({ port, clientSecret }) {
   app.post('/deleteSub', require('./api/deleteSub'));
   app.post('/pauseSub', require('./api/pauseSub'));
 
-  app.listen(port, '0.0.0.0');
+  app.listen(port);
   cli.ok(`API server listening on ${port}`);
   cli.info(`Auth at ${module.exports.redirectURI}`);
 };
