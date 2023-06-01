@@ -3,6 +3,7 @@ const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const utils = require('./bakalariStalkin/util/generic.js');
 const db = require("./lib/dbpromise");
 const telegram = require('./index').tg;
+const matrix = require('./index').matrixBot;
 const {markdownv2: format} = require('telegram-format');
 const {
   MessageEmbed
@@ -188,18 +189,33 @@ async function stalk() {
         }
         break;
       case 1:
-        let message = `
-          ${format.bold(format.escape(subscription.info.label))}\n${format.escape(event.beginTime)} \\- ${format.escape(event.endTime)} \\| ${format.escape(event.room)}\n${format.escape(event.subjectName)}${event.group?` \\| ${format.escape(event.group)}`:``}\n${format.escape(event.teacher)}\n${format.escape(event.changeinfo == "" ? "" : event.changeinfo)}`;
+        let TgMessage = `
+          ${format.bold(format.escape(subscription.info.label))}\n${format.escape(event.beginTime)} \\- ${format.escape(event.endTime)} \\| ${format.escape(event.room)}\n${format.escape(event.subjectName)}${event.group?` \\| ${format.escape(event.group)}`:``}\n${format.escape(event.teacher)}\n${event.changeinfo == "" ? "" : format.escape(event.changeinfo)}`;
         try {
-          telegram.telegram.sendMessage(subscription.info.userID, {text: message, parse_mode: 'MarkdownV2' });
+          telegram.telegram.sendMessage(subscription.info.userID, {text: TgMessage, parse_mode: 'MarkdownV2' });
           cli.ok(`Sent notification "${subscription.info.label}" to user ${subscription.info.userID}`);
         } catch (e) {
           cli.error(`Sending notification to user ${subscription.info.userID} failed:
         ${e.message}`);
         }
         break;
+      case 2:
+        let MxMessage = `**${subscription.info.label}**\n${event.beginTime} - ${event.endTime} | ${event.room}\n${event.subjectName}${event.group?` | ${event.group}`:``}\n${event.teacher}\n*${event.changeinfo == "" ? "" : event.changeinfo}*`
+        let MxMessageHTML = `<strong>${subscription.info.label}</strong><br>${event.beginTime} - ${event.endTime} | ${event.room}<br>${event.subjectName}${event.group?` | ${event.group}`:``}<br>${event.teacher}<br><i>${event.changeinfo == "" ? "" : event.changeinfo}</i>`
+        try {
+          matrixBot.sendMessage(subscription.info.userID, {
+            "msgtype": "m.text",
+            "body": MxMessage,
+            "format": "org.matrix.custom.html",
+            "formatted_body": MxMessageHTML
+          });
+        } catch (e) {
+          cli.error(`Sending notification to user ${subscription.info.userID} failed:
+        ${e.message}`);
+        }
+        break;
       default:
-        cli.error(`Unknown platform ${subscription.info.platform}`);
+        cli.error(`Unknown platform ${subscription.info.platform}. Sub ID: ${subscription.info.id}`);
         break;
     }
   }

@@ -5,18 +5,24 @@ const stalk = require('./stalk.js');
 const apiServer = require('./apiServer.js');
 const getTT = require('./bakalariStalkin/util/getClassTT.js');
 const fetch = require('node-fetch');
+const matrixSDK = require("matrix-bot-sdk");
 const {
   Client, Collection, Intents,
 } = require('discord.js');
 const {
-  token, apiPort, clientSecret, tgToken
+  token, apiPort, clientSecret, tgToken, mxHomeserver, mxToken
 } = require('./config.json');
 const {
   joinVoiceChannel
 } = require('@discordjs/voice');
 
 const { Telegraf, Markup } = require('telegraf');
+const { add } = require('cheerio/lib/api/traversing.js');
 const tg = new Telegraf(tgToken);
+
+const matrixStorage = new matrixSDK.SimpleFsStorageProvider("matrix_storage.json");
+const matrixCryptoProvider = new matrixSDK.RustSdkCryptoStorageProvider("./matrix_crypto_");
+const matrixBot = new matrixSDK.MatrixClient(mxHomeserver, mxToken, matrixStorage, matrixCryptoProvider);
 
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./save.db');
@@ -28,15 +34,7 @@ stalk.client = client;
 module.exports.client = client;
 module.exports.db = db;
 module.exports.tg = tg;
-
-client.commands = new Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  command.client = client;
-  client.commands.set(command.data.name, command);
-}
+module.exports.matrixBot = matrixBot;
 
 tg.command('start', (ctx) => ctx.reply(
   `Hello ${ctx.from.first_name}! I'm luk mom I have a stalker. You can use me to get notifications about your classes. Use /web to get a link for WebUI.`,
@@ -63,7 +61,14 @@ tg.command('web', async (ctx) => {
 
 });
 
-tg.launch();
+client.commands = new Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  command.client = client;
+  client.commands.set(command.data.name, command);
+}
 
 client.once('ready', async () => {
   console.log('Ready as "' + client?.user?.username + "#" + client?.user?.discriminator + '"');
@@ -81,6 +86,9 @@ client.once('ready', async () => {
   stalk.stalk();
   
   apiServer.start({ port: apiPort, clientSecret });
+
+  tg.launch();
+  await initMatrix();
 });
 
 client.on('interactionCreate', async interaction => {
@@ -115,6 +123,88 @@ db.serialize(function() {
 
   client.login(token);
 });
+
+async function initMatrix() {
+  matrixSDK.AutojoinRoomsMixin.setupOnClient(matrixBot);
+  try {
+    await matrixBot.start();
+    console.log('Matrix connected');
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+matrixBot.on("room.message", async (roomId, event) => {
+  if (!event.content?.msgtype) return;
+  if(event.sender === await matrixBot.getUserId()) return;
+  event.__Room_ID = roomId;
+  handleMSG(event);
+});
+
+matrixBot.on("room.join", (roomId, event) => {
+  const message = "Hello! I'm luk mom I have a stalker. You can use me to get notifications about your classes. Send me !web to login to WebUI.";
+  matrixBot.sendMessage(roomId, {
+    "msgtype": "m.text",
+    "body": message,
+  });
+});
+
+matrixBot.on("room.event", async (roomId, event) => {
+  if (event.type != "m.room.member" && event.content.membership != "leave") return;
+  try{
+    let members = await matrixBot.getJoinedRoomMembers(roomId);
+    if (members.length == 1) {
+      console.log("Leaving room " + roomId);
+      await matrixBot.leaveRoom(roomId);
+      console.log("Forgetting room " + roomId);
+      await matrixBot.forgetRoom(roomId);
+      console.log("Purging subs for room " + roomId);
+      await db.run("DELETE FROM subscriptions WHERE userID = ?", [roomId]);
+    }
+  } catch(e) {
+    console.error(e);
+  }
+  });
+
+async function handleMSG(event) {
+  const body = event["content"]["body"];
+  if (!body) return;
+  if (body.startsWith("!web")){
+    let profile = await matrixBot.getUserProfile(event.sender);
+    let avatar = await getMatrixAvatar(await matrixBot.getUserProfile(event.sender));
+    let user = {
+      id: event.__Room_ID,
+      platform: 2,
+      username: profile.displayname,
+      avatar: avatar
+    }
+
+    let token = apiServer.createSession(user, true);
+
+    const replyBody = "Here y'go: " + apiServer.redirectURI + "?t=" + token + " (expires in 1 hour)";
+    const reply = matrixSDK.RichReply.createFor(event.__Room_ID, event, replyBody, replyBody);
+    reply["msgtype"] = "m.notice";
+    matrixBot.sendMessage(event.__Room_ID, reply);
+  }
+}
+
+async function getMatrixAvatar(profile) {
+  let mxAvatar = profile.avatar_url;
+  const regex = /^mxc:\/\/(.*)\/(.*)/;
+  let matches = mxAvatar.match(regex);
+
+  const serverName = matches[1];
+  const mediaId = matches[2];
+
+  try {
+    let img = await fetch(`https://matrix.smartyfeed.me/_matrix/media/r0/download/${serverName}/${mediaId}`);
+    let buffer = await img.buffer();
+    return("data:image/png;base64," +  buffer.toString('base64'));
+  } catch(e) {
+    console.error(e);
+    return "";
+  }
+}
 
 process.on("SIGINT", function() {
   client.user.setStatus('invisible');
