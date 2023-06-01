@@ -4,6 +4,8 @@ const uuid = require('uuid');
 const fetch = require('node-fetch');
 const cli = require('cli');
 const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
+const { tgToken } = require('./config.json');
 
 module.exports.redirectURI = "https://bakalari.smartyfeed.me/api/auth";
 
@@ -46,7 +48,8 @@ module.exports.start = async function({ port, clientSecret }) {
       if(token && sessions.has(token)) {
         return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + token : "/");
       }
-      return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=${encodeURIComponent(module.exports.redirectURI)}&response_type=code&scope=identify`);
+      return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
+      // return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=${encodeURIComponent(module.exports.redirectURI)}&response_type=code&scope=identify`);
     }
 
     try {
@@ -93,6 +96,37 @@ module.exports.start = async function({ port, clientSecret }) {
     }
   });
 
+  app.get('/telegramAuth', async function (req, res) {
+    let query = req.query;
+
+    let data_check_arr = [];
+
+    for (let key in query) {
+      if (key == 'hash') continue;
+      data_check_arr.push(key + '=' + query[key]);
+    }
+
+    data_check_arr.sort();
+
+    let data_check_string = data_check_arr.join("\n");
+
+    let secret_key = crypto.createHash('sha256').update(tgToken).digest();
+    let hmac = crypto.createHmac('sha256', secret_key).update(data_check_string).digest('hex');
+
+    if (hmac != query.hash || (Date.now() - query.auth_date * 1000) > 86400000) {
+      return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
+    }
+
+    let user = {
+      id: query.id,
+      username: query.first_name + " " + query.last_name,
+      avatar: query.photo_url,
+      platform: 1,
+    }
+    let stalkerToken = module.exports.createSession(user, false);
+    res.cookie("token", stalkerToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + stalkerToken : "/");
+  });
+
   app.get('/logout', async function (req, res) {
     var token  = req.query?.token || req.cookies?.token;
     if(token && sessions.has(token)) {
@@ -125,7 +159,7 @@ module.exports.start = async function({ port, clientSecret }) {
   app.post('/deleteSub', require('./api/deleteSub'));
   app.post('/pauseSub', require('./api/pauseSub'));
 
-  app.listen(port);
+  app.listen(port, '0.0.0.0');
   cli.ok(`API server listening on ${port}`);
   cli.info(`Auth at ${module.exports.redirectURI}`);
 };
