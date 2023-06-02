@@ -176,6 +176,6 @@ module.exports.createSession = function(user, isLink) {
   session.isAdmin = client.application.owner.members?.find(member => member.user.id == user.id) ? true : false;
   if(isLink)
     session.authBefore = Date.now() + 5 * 60 * 1000;
-  cli.ok(`Made ${isLink ? "auth link" : "session"} for ${user.username}#${user.discriminator}`);
+  cli.ok(`Made ${isLink ? "auth link" : "session"} for ${user.username}@${(({ 0: "Discord", 1: "Telegram", 2: "Matrix"})[user.platform] ?? "Unknown")}`);
   return stalkerToken;
 };
