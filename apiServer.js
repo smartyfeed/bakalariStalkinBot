@@ -13,7 +13,7 @@ const sessions = new Map();
 module.exports.sessions = sessions;
 let client;
 
-module.exports.start = async function({ port, clientSecret }) {
+module.exports.start = async function({ port, discordSecret }) {
   client = require('./index').client;
   const app = express();
 
@@ -61,7 +61,7 @@ module.exports.start = async function({ port, clientSecret }) {
         method: 'POST',
         body: new URLSearchParams({
           client_id: client.application.id,
-          client_secret: clientSecret,
+          client_secret: discordSecret,
           code: req.query.code,
           grant_type: 'authorization_code',
           redirect_uri: module.exports.redirectURI,
@@ -72,7 +72,7 @@ module.exports.start = async function({ port, clientSecret }) {
         },
       });
       const oauthData = await oauthResult.json();
-      if (oauthData.error) throw oauthData.error;
+      if (oauthData.error) throw oauthData;
 
       const userResult = await fetch('https://discord.com/api/users/@me', {
         headers: {
