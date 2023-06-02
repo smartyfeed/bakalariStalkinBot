@@ -196,15 +196,7 @@ async function getMatrixAvatar(profile) {
   const serverName = matches[1];
   const mediaId = matches[2];
 
-  try {
-    const img = await fetch(`https://matrix.smartyfeed.me/_matrix/media/r0/download/${serverName}/${mediaId}`);
-    const buffer = await img.buffer();
-    return ('data:image/png;base64,' + buffer.toString('base64'));
-  }
-  catch (e) {
-    console.error(e);
-    return '';
-  }
+  return `https://matrix.smartyfeed.me/_matrix/media/r0/thumbnail/${serverName}/${mediaId}?width=256&height=256`;
 }
 
 process.on('SIGINT', function() {
