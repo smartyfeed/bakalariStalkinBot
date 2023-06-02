@@ -42,14 +42,17 @@ module.exports.start = async function({ port, clientSecret }) {
         return res.cookie("token", newToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + newToken : "/");
       }
     }
+
+    if(req.query?.t && !sessions.has(req.query.t)) {
+      return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
+    }
   
     if(!req.query?.code) {
       var token  = req.query?.token || req.cookies?.token;
       if(token && sessions.has(token)) {
         return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + token : "/");
       }
-      return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
-      // return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=${encodeURIComponent(module.exports.redirectURI)}&response_type=code&scope=identify`);
+      return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=${encodeURIComponent(module.exports.redirectURI)}&response_type=code&scope=identify`);
     }
 
     try {

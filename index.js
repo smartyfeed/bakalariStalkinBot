@@ -31,10 +31,10 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
 });
 stalk.client = client;
+stalk.telegram = tg;
+stalk.matrixBot = matrixBot;
 module.exports.client = client;
 module.exports.db = db;
-module.exports.tg = tg;
-module.exports.matrixBot = matrixBot;
 
 tg.command('start', (ctx) => ctx.reply(
   `Hello ${ctx.from.first_name}! I'm luk mom I have a stalker. You can use me to get notifications about your classes. Use /web to get a link for WebUI.`,
@@ -83,12 +83,14 @@ client.once('ready', async () => {
   };
   setInterval(presenceUpdater, 60 * 60 * 1000);
   presenceUpdater();
+  
+  tg.launch();
+  await initMatrix();
+
   stalk.stalk();
   
   apiServer.start({ port: apiPort, clientSecret });
 
-  tg.launch();
-  await initMatrix();
 });
 
 client.on('interactionCreate', async interaction => {
