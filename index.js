@@ -17,7 +17,6 @@ const {
 } = require('@discordjs/voice');
 
 const { Telegraf, Markup } = require('telegraf');
-const { add } = require('cheerio/lib/api/traversing.js');
 const tg = new Telegraf(tgToken);
 
 const matrixStorage = new matrixSDK.SimpleFsStorageProvider("matrix_storage.json");
@@ -31,8 +30,8 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
 });
 stalk.client = client;
-stalk.telegram = tg;
-stalk.matrixBot = matrixBot;
+module.exports.matrix = matrixBot;
+module.exports.telegram = tg;
 module.exports.client = client;
 module.exports.db = db;
 

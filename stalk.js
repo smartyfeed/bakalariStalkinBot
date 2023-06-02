@@ -8,9 +8,6 @@ const {
 } = require('discord.js');
 module.exports.stalk = stalk;
 
-var tg;
-var matrixBot;
-
 async function stalk() {
   module.exports.initSubscription = initSubscription;
 
@@ -169,6 +166,9 @@ async function stalk() {
   }
 
   async function sendNotification(subscription, event) {
+    const telegram = require('./index').telegram;
+    const matrix = require('./index').matrix;
+
     if (subscription.info.pausedUntil > Date.now()) {
       return;
     }
@@ -193,7 +193,7 @@ async function stalk() {
         let TgMessage = `
           ${format.bold(format.escape(subscription.info.label))}\n${format.escape(event.beginTime)} \\- ${format.escape(event.endTime)} \\| ${format.escape(event.room)}\n${format.escape(event.subjectName)}${event.group?` \\| ${format.escape(event.group)}`:``}\n${format.escape(event.teacher)}\n${event.changeinfo == "" ? "" : format.escape(event.changeinfo)}`;
         try {
-          module.exports.telegram.telegram.sendMessage(subscription.info.userID, {text: TgMessage, parse_mode: 'MarkdownV2' });
+          telegram.telegram.sendMessage(subscription.info.userID, {text: TgMessage, parse_mode: 'MarkdownV2' });
           cli.ok(`Sent notification "${subscription.info.label}" to user ${subscription.info.userID}`);
         } catch (e) {
           cli.error(`Sending notification to user ${subscription.info.userID} failed:
@@ -204,7 +204,7 @@ async function stalk() {
         let MxMessage = `**${subscription.info.label}**\n${event.beginTime} - ${event.endTime} | ${event.room}\n${event.subjectName}${event.group?` | ${event.group}`:``}\n${event.teacher}\n*${event.changeinfo == "" ? "" : event.changeinfo}*`
         let MxMessageHTML = `<strong>${subscription.info.label}</strong><br>${event.beginTime} - ${event.endTime} | ${event.room}<br>${event.subjectName}${event.group?` | ${event.group}`:``}<br>${event.teacher}<br><i>${event.changeinfo == "" ? "" : event.changeinfo}</i>`
         try {
-          module.exports.matrixBot.sendMessage(subscription.info.userID, {
+          matrix.sendMessage(subscription.info.userID, {
             "msgtype": "m.text",
             "body": MxMessage,
             "format": "org.matrix.custom.html",
