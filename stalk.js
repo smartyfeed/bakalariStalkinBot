@@ -173,7 +173,7 @@ async function stalk() {
       return;
     }
     switch(subscription.info.platform) {
-      case 0:
+      case 0: // Discord
         let user = await module.exports.client.users.fetch(subscription.info.userID);
         const lukMomIhaveEmbed = new MessageEmbed()
           .setColor(event.changeinfo !== "" ? '#ff3300' : '#0099ff')
@@ -189,7 +189,7 @@ async function stalk() {
         ${e.message}`);
         }
         break;
-      case 1:
+      case 1: // Telegram
         let TgMessage = `
           ${format.bold(format.escape(subscription.info.label))}\n${format.escape(event.beginTime)} \\- ${format.escape(event.endTime)} \\| ${format.escape(event.room)}\n${format.escape(event.subjectName)}${event.group?` \\| ${format.escape(event.group)}`:``}\n${format.escape(event.teacher)}\n${event.changeinfo == "" ? "" : format.escape(event.changeinfo)}`;
         try {
@@ -200,7 +200,7 @@ async function stalk() {
         ${e.message}`);
         }
         break;
-      case 2:
+      case 2: // Matrix
         let MxMessage = `**${subscription.info.label}**\n${event.beginTime} - ${event.endTime} | ${event.room}\n${event.subjectName}${event.group?` | ${event.group}`:``}\n${event.teacher}\n*${event.changeinfo == "" ? "" : event.changeinfo}*`
         let MxMessageHTML = `<strong>${subscription.info.label}</strong><br>${event.beginTime} - ${event.endTime} | ${event.room}<br>${event.subjectName}${event.group?` | ${event.group}`:``}<br>${event.teacher}<br><i>${event.changeinfo == "" ? "" : event.changeinfo}</i>`
         try {

@@ -33,21 +33,21 @@ module.exports.start = async function({ port, clientSecret }) {
   });
 
   app.get('/auth', async function (req, res) {
-    if(req.query?.t && sessions.has(req.query.t)) {
-      let session = sessions.get(req.query.t);
-      if(session.authBefore > Date.now()) {
-        cli.info("Link-login");
-        var newToken = module.exports.createSession(session.user, false);
-        sessions.delete(req.query.t);
-        return res.cookie("token", newToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + newToken : "/");
+    if(req.query?.t) { // Link-login attempt
+      if(sessions.has(req.query.t)) {
+        let session = sessions.get(req.query.t);
+        if(session.authBefore > Date.now()) {
+          cli.info("Link-login");
+          var newToken = module.exports.createSession(session.user, false);
+          sessions.delete(req.query.t);
+          return res.cookie("token", newToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + newToken : "/");
+        }
+      } else {
+        return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
       }
     }
-
-    if(req.query?.t && !sessions.has(req.query.t)) {
-      return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
-    }
   
-    if(!req.query?.code) {
+    if(!req.query?.code) { // Discord OAuth attempt
       var token  = req.query?.token || req.cookies?.token;
       if(token && sessions.has(token)) {
         return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + token : "/");
