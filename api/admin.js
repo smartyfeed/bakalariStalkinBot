@@ -1,33 +1,33 @@
-const db = require("../lib/dbpromise");
-const generic = require("../bakalariStalkin/util/generic.js");
+const db = require('../lib/dbpromise');
+const generic = require('../bakalariStalkin/util/generic.js');
 const ms = require('ms');
 const fs = require('fs');
-const stalk = require("../stalk.js");
+const stalk = require('../stalk.js');
 
-module.exports = async function (req, res) {
-  var { user, isAdmin } = req.session;
-  const { client } = require("../index");
+module.exports = async function(req, res) {
+  const { isAdmin } = req.session;
+  const { client } = require('../index');
 
-  let classIds = JSON.parse(fs.readFileSync("bakalariStalkin/classIds.json", "utf8"));
+  const classIds = JSON.parse(fs.readFileSync('bakalariStalkin/classIds.json', 'utf8'));
 
   if (!isAdmin) {
     return res.status(403).json({
       status: 403,
-      error: "E_UNAUTHORIZED",
-      message: "You are not authorized to access this",
+      error: 'E_UNAUTHORIZED',
+      message: 'You are not authorized to access this',
     });
   }
 
-  var stalkers = {};
-  let subs = await db.all("SELECT * FROM subscriptions");
+  const stalkers = {};
+  const subs = await db.all('SELECT * FROM subscriptions');
 
-  for (let sub of subs) {
+  for (const sub of subs) {
     sub.className = (
       await generic.getClassInfo(sub.classID, false, sub.bakaServer)
     ).name;
   }
 
-  for (let sub of subs) {
+  for (const sub of subs) {
     if (!stalkers[sub.userID]) {
       stalkers[sub.userID] = {};
       stalkers[sub.userID].subs = [];
@@ -37,7 +37,7 @@ module.exports = async function (req, res) {
     stalkers[sub.userID].subs.push(sub);
   }
 
-  var stats = {
+  const stats = {
     discord: {},
     env: {},
     stalk: {},
@@ -57,7 +57,7 @@ module.exports = async function (req, res) {
       .reduce((a, c) => a + c, 0),
   };
 
-  let hash = fs.readFileSync(".git/" + fs.readFileSync(".git/HEAD", "utf8").replace(/ref: |\n/g,""), "utf8");
+  const hash = fs.readFileSync('.git/' + fs.readFileSync('.git/HEAD', 'utf8').replace(/ref: |\n/g, ''), 'utf8');
   stats.env = {
     node: process.version,
     commit: hash.substr(0, 6),
@@ -69,7 +69,7 @@ module.exports = async function (req, res) {
     subs: subs.length,
     TTs: Object.keys(stalk.timetables).length,
     schools: Object.keys(classIds).length,
-  }
+  };
 
   res.json({ status: 200, stalkers: stalkers, stats: stats });
 };

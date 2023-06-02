@@ -1,21 +1,21 @@
-const db = require("../lib/dbpromise");
-const getBaseUrl = require("../bakalariStalkin/util/getBaseUrl.js");
-const updateClassIDs = require("../bakalariStalkin/util/updateClassIDs.js");
-const generic = require("../bakalariStalkin/util/generic.js");
-const stalk = require("../stalk.js");
+const db = require('../lib/dbpromise');
+const getBaseUrl = require('../bakalariStalkin/util/getBaseUrl.js');
+const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
+const generic = require('../bakalariStalkin/util/generic.js');
+const stalk = require('../stalk.js');
 
-module.exports = async function (req, res) {
-  let { user } = req.session;
+module.exports = async function(req, res) {
+  const { user } = req.session;
 
-  let data = req.body;
+  const data = req.body;
 
   if (data.step == 1) {
-    let bakaServer = await getBaseUrl(req.body.bakaServer);
+    const bakaServer = await getBaseUrl(req.body.bakaServer);
 
     if (bakaServer === null || bakaServer === undefined) {
       return res.status(400).json({
-        error: "E_BAD_BAKA_SERVER",
-        message: "Provided Bakaláři server is not valid",
+        error: 'E_BAD_BAKA_SERVER',
+        message: 'Provided Bakaláři server is not valid',
         step: 1,
       });
     }
@@ -28,12 +28,12 @@ module.exports = async function (req, res) {
   }
 
   if (data.step == 2) {
-    let className = data.className;
-    let bakaServer = data.bakaServer;
+    const className = data.className;
+    const bakaServer = data.bakaServer;
     if (!className) {
       return res.status(400).json({
-        error: "E_BAD_CLASS_NAME",
-        message: "Provided class is not valid",
+        error: 'E_BAD_CLASS_NAME',
+        message: 'Provided class is not valid',
         step: 1,
       });
     }
@@ -43,13 +43,14 @@ module.exports = async function (req, res) {
       possible_groups = await generic.getPossibleGroups(
         className,
         true,
-        bakaServer
+        bakaServer,
       );
-    } catch (e) {
+    }
+    catch (e) {
       console.log(e);
       return res.status(400).json({
-        error: "E_BAD_CLASS_NAME",
-        message: "Provided class is not valid",
+        error: 'E_BAD_CLASS_NAME',
+        message: 'Provided class is not valid',
         step: 1,
       });
     }
@@ -63,12 +64,12 @@ module.exports = async function (req, res) {
   }
 
   if (data.step == 3) {
-    let className = data.className;
-    let bakaServer = data.bakaServer;
+    const className = data.className;
+    const bakaServer = data.bakaServer;
     if (!className) {
       return res.status(400).json({
-        error: "E_BAD_CLASS_NAME",
-        message: "Provided class is not valid",
+        error: 'E_BAD_CLASS_NAME',
+        message: 'Provided class is not valid',
         step: 1,
       });
     }
@@ -78,13 +79,14 @@ module.exports = async function (req, res) {
       possible_groups = await generic.getPossibleGroups(
         className,
         true,
-        bakaServer
+        bakaServer,
       );
-    } catch (e) {
+    }
+    catch (e) {
       console.log(e);
       return res.status(400).json({
-        error: "E_BAD_CLASS_NAME",
-        message: "Provided class is not valid",
+        error: 'E_BAD_CLASS_NAME',
+        message: 'Provided class is not valid',
         step: 1,
       });
     }
@@ -96,19 +98,20 @@ module.exports = async function (req, res) {
     }
 
     if (!Array.isArray(groups)) {
-      if (groups != "") {
+      if (groups != '') {
         groups = [groups];
-      } else {
+      }
+      else {
         groups = [];
       }
     }
 
     if (groups.length != 0) {
-      for (var group of groups) {
+      for (const group of groups) {
         if (!possible_groups.includes(group)) {
           return res.status(400).json({
-            error: "E_BAD_GROUPS",
-            message: "Provided groups are not valid",
+            error: 'E_BAD_GROUPS',
+            message: 'Provided groups are not valid',
             step: 1,
           });
         }
@@ -126,20 +129,21 @@ module.exports = async function (req, res) {
 
   if (data.step == 4) {
     let groups = data.groups;
-    let className = data.className;
-    let bakaServer = data.bakaServer;
-    let notificationOnClassStart = data.notificationOnClassStart;
+    const className = data.className;
+    const bakaServer = data.bakaServer;
+    const notificationOnClassStart = data.notificationOnClassStart;
     let label = data.label;
-    let oldId = data.oldId;
+    const oldId = data.oldId;
 
     if (!groups) {
       groups = [];
     }
 
     if (!Array.isArray(groups)) {
-      if (groups != "") {
+      if (groups != '') {
         groups = [groups];
-      } else {
+      }
+      else {
         groups = [];
       }
     }
@@ -148,12 +152,12 @@ module.exports = async function (req, res) {
       label = className;
     }
 
-    if (oldId != "new") {
-      db.run("DELETE FROM subscriptions WHERE id = ?", [oldId]);
+    if (oldId != 'new') {
+      db.run('DELETE FROM subscriptions WHERE id = ?', [oldId]);
     }
 
-    let result = await db.run(
-      "INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart, platform) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    const result = await db.run(
+      'INSERT INTO subscriptions (userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart, platform) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [
         user.id,
         (await generic.getClassInfo(className, false, bakaServer)).id,
@@ -163,12 +167,12 @@ module.exports = async function (req, res) {
         bakaServer,
         notificationOnClassStart ? 1 : 0,
         user.platform,
-      ]
+      ],
     );
 
     await stalk.initSubscription(result.lastID);
   }
   return res.status(303).json({
-    redirect: "/",
+    redirect: '/',
   });
 };

@@ -2,13 +2,11 @@ const generic = require('../bakalariStalkin/util/generic.js');
 const getBaseUrl = require('../bakalariStalkin/util/getBaseUrl.js');
 const updateClassIDs = require('../bakalariStalkin/util/updateClassIDs.js');
 const stalk = require('../stalk.js');
-const db = require("../lib/dbpromise");
+const db = require('../lib/dbpromise');
 const cli = require('cli');
-const cliui = require('cliui');
 const {
-  SlashCommandBuilder
+  SlashCommandBuilder,
 } = require('@discordjs/builders');
-const fs = require('fs');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -21,12 +19,12 @@ module.exports = {
     .addStringOption(option => option.setName('server').setDescription('Base URL of your Bakalari server, default - SSSVT server').setRequired(false)),
   async execute(interaction) {
     const className = interaction.options.getString('class').toUpperCase();
-    const groups = interaction.options.getString('groups')?.split(" ")
+    const groups = interaction.options.getString('groups')?.split(' ')
       .filter(a => a)
       .sort()
       .filter((v, i, self) => self.indexOf(v) === i) || [];
     const label = interaction.options.getString('label') || className;
-    var server = interaction.options.getString('server');
+    let server = interaction.options.getString('server');
     if (server) {
       server = await getBaseUrl(interaction.options.getString('server'));
 
@@ -34,51 +32,51 @@ module.exports = {
         cli.error(`Invalid server URL (${interaction.options.getString('server')}) entered by ${interaction.user.username} | ${interaction.user.id}`);
         return interaction.reply({
           content: `Invalid Bakalari server URL (${interaction.options.getString('server')})`,
-          ephemeral: true
+          ephemeral: true,
         });
       }
       if (server === undefined) {
         cli.error(`Valid server URL (${interaction.options.getString('server')}) without public TT entered by ${interaction.user.username} | ${interaction.user.id}`);
         return interaction.reply({
-          content: `Unfortunately this Bakalari server is not supported`,
-          ephemeral: true
+          content: 'Unfortunately this Bakalari server is not supported',
+          ephemeral: true,
         });
       }
-    } else {
-      server = "https://is.sssvt.cz/IS/Timetable/Public";
+    }
+    else {
+      server = 'https://is.sssvt.cz/IS/Timetable/Public';
     }
 
     await updateClassIDs(server);
 
-    var onClassStart = interaction.options.getBoolean('onclassstart');
+    const onClassStart = interaction.options.getBoolean('onclassstart');
 
     if (!(await generic.getClassInfo(className, false, server))) {
-      cli.error(`Incorrect class (${className}, ${server}) entered by ${interaction.user.username} | ${interaction.user.id}`)
+      cli.error(`Incorrect class (${className}, ${server}) entered by ${interaction.user.username} | ${interaction.user.id}`);
       return interaction.reply({
         content: `Incorrect class: ${className}`,
-        ephemeral: true
+        ephemeral: true,
       });
     }
-    for (var i = 0; i < groups.length; i++) {
+    for (let i = 0; i < groups.length; i++) {
       if (!/^[1-4].sk$/.test(groups[i])) {
-        cli.error(`Incorrect group (${groups[i]}) entered by ${interaction.user.username} | ${interaction.user.id}`)
+        cli.error(`Incorrect group (${groups[i]}) entered by ${interaction.user.username} | ${interaction.user.id}`);
         return interaction.reply({
           content: `Incorrect group: ${groups[i]}`,
-          ephemeral: true
+          ephemeral: true,
         });
       }
     }
-    let args = [interaction.user.id, (await generic.getClassInfo(className, false, server)).id, JSON.stringify(groups), 0, label, server, onClassStart ? 1 : 0];
-    if(process.env.NODE_ENV == 'development')
-      console.log("sub args", args);
-    let result = await db.run("INSERT INTO subscriptions(userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) values(?, ?, ?, ?, ?, ?, ?)", args);
+    const args = [interaction.user.id, (await generic.getClassInfo(className, false, server)).id, JSON.stringify(groups), 0, label, server, onClassStart ? 1 : 0];
+    if (process.env.NODE_ENV == 'development') {console.log('sub args', args);}
+    const result = await db.run('INSERT INTO subscriptions(userID, classID, groups, pausedUntil, label, bakaServer, notificationOnClassStart) values(?, ?, ?, ?, ?, ?, ?)', args);
 
     await stalk.initSubscription(result.lastID);
 
-    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${(await generic.getClassInfo(className, false, server)).id}) ${groups}, server: ${server} | ID: ${interaction.user.id}`)
+    cli.ok(`${interaction.user.username} started stalking ${className} (ID: ${(await generic.getClassInfo(className, false, server)).id}) ${groups}, server: ${server} | ID: ${interaction.user.id}`);
     return interaction.reply({
-      content: `Successfully started stalking! :sunglasses:`,
-      ephemeral: true
+      content: 'Successfully started stalking! :sunglasses:',
+      ephemeral: true,
     });
   },
 };

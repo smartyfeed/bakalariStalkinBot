@@ -1,13 +1,7 @@
 const cli = require('cli');
-const cliui = require('cliui');
 const {
-  SlashCommandBuilder
+  SlashCommandBuilder,
 } = require('@discordjs/builders');
-const {
-  Client,
-  Collection,
-  Intents
-} = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -17,21 +11,22 @@ module.exports = {
     .addUserOption(option => option.setName('user').setDescription('Required user').setRequired(false)),
   async execute(interaction) {
     try {
-      var ID = interaction.options.getString('id');
-      var USER = interaction.options.getUser('user');
+      const ID = interaction.options.getString('id');
+      const USER = interaction.options.getUser('user');
 
-      var userID = ID || USER?.id || interaction.user.id;
-      var user =  await module.exports.client.users.fetch(userID);
+      const userID = ID || USER?.id || interaction.user.id;
+      const user = await module.exports.client.users.fetch(userID);
 
       if (!user.dmChannel) {
         try {
           await user.createDM();
-        } catch (e) {
+        }
+        catch (e) {
           cli.error(`Failed to create userDM channel with ${user.tag} | bot: ${user.bot}`);
         }
       }
 
-      var output = '<@' + userID + '>\n```diff';
+      let output = '<@' + userID + '>\n```diff';
       output += `
 - ${user.tag}
 + User id: ${user.id}
@@ -45,13 +40,14 @@ module.exports = {
       output += '```';
       return interaction.reply({
         content: output,
-        ephemeral: true
+        ephemeral: true,
       });
-    } catch (e) {
-      output = 'Something happened, we are not sure what. Try again, it might help. If the error persists please don\'t contact us. Our bot comes without any warranty';
+    }
+    catch (e) {
+      const output = 'Something happened, we are not sure what. Try again, it might help. If the error persists please don\'t contact us. Our bot comes without any warranty';
       return interaction.reply({
         content: output,
-        ephemeral: true
+        ephemeral: true,
       });
     }
   },

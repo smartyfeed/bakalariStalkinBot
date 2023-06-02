@@ -7,11 +7,11 @@ const cookieParser = require('cookie-parser');
 const crypto = require('crypto');
 const { tgToken } = require('./config.json');
 
-module.exports.redirectURI = "https://bakalari.smartyfeed.me/api/auth";
+module.exports.redirectURI = 'https://bakalari.smartyfeed.me/api/auth';
 
-var sessions = new Map();
+const sessions = new Map();
 module.exports.sessions = sessions;
-var client;
+let client;
 
 module.exports.start = async function({ port, clientSecret }) {
   client = require('./index').client;
@@ -19,7 +19,7 @@ module.exports.start = async function({ port, clientSecret }) {
 
   await client.application.fetch();
 
-  if(process.env.NODE_ENV == 'development') {
+  if (process.env.NODE_ENV == 'development') {
     app.use(require('cors')());
     module.exports.redirectURI = `http://localhost:${port}/auth`;
   }
@@ -28,29 +28,30 @@ module.exports.start = async function({ port, clientSecret }) {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
-  app.get('/', function (req, res) {
+  app.get('/', function(req, res) {
     res.send('API not documented, to chcete moc');
   });
 
-  app.get('/auth', async function (req, res) {
-    if(req.query?.t) { // Link-login attempt
-      if(sessions.has(req.query.t)) {
-        let session = sessions.get(req.query.t);
-        if(session.authBefore > Date.now()) {
-          cli.info("Link-login");
-          var newToken = module.exports.createSession(session.user, false);
+  app.get('/auth', async function(req, res) {
+    if (req.query?.t) { // Link-login attempt
+      if (sessions.has(req.query.t)) {
+        const session = sessions.get(req.query.t);
+        if (session.authBefore > Date.now()) {
+          cli.info('Link-login');
+          const newToken = module.exports.createSession(session.user, false);
           sessions.delete(req.query.t);
-          return res.cookie("token", newToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + newToken : "/");
+          return res.cookie('token', newToken).redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000/#' + newToken : '/');
         }
-      } else {
-        return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
+      }
+      else {
+        return res.redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000/#' : '/');
       }
     }
-  
-    if(!req.query?.code) { // Discord OAuth attempt
-      var token  = req.query?.token || req.cookies?.token;
-      if(token && sessions.has(token)) {
-        return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + token : "/");
+
+    if (!req.query?.code) { // Discord OAuth attempt
+      const token = req.query?.token || req.cookies?.token;
+      if (token && sessions.has(token)) {
+        return res.redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000/#' + token : '/');
       }
       return res.redirect(`https://discord.com/api/oauth2/authorize?client_id=${client.application.id}&redirect_uri=${encodeURIComponent(module.exports.redirectURI)}&response_type=code&scope=identify`);
     }
@@ -71,7 +72,7 @@ module.exports.start = async function({ port, clientSecret }) {
         },
       });
       const oauthData = await oauthResult.json();
-      if(oauthData.error) throw oauthData.error;
+      if (oauthData.error) throw oauthData.error;
 
       const userResult = await fetch('https://discord.com/api/users/@me', {
         headers: {
@@ -79,74 +80,76 @@ module.exports.start = async function({ port, clientSecret }) {
         },
       });
 
-      let discordUser = await userResult.json();
-      
-      let user = {
+      const discordUser = await userResult.json();
+
+      const user = {
         id: discordUser.id,
         username: discordUser.username,
         avatar: `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=256`,
         platform: 0,
-      }
+      };
 
-      let stalkerToken = module.exports.createSession(user, false);
-      res.cookie("token", stalkerToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + stalkerToken : "/");
-    } catch (error) {
-      console.error(error)
+      const stalkerToken = module.exports.createSession(user, false);
+      res.cookie('token', stalkerToken).redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000/#' + stalkerToken : '/');
+    }
+    catch (error) {
+      console.error(error);
       res.status(401).json({
-        error: "E_BAD_CODE",
-        message: "Provided Discord code is not valid or an unknown error occurred while creating the session",
+        error: 'E_BAD_CODE',
+        message: 'Provided Discord code is not valid or an unknown error occurred while creating the session',
       });
     }
   });
 
-  app.get('/telegramAuth', async function (req, res) {
-    let query = req.query;
+  app.get('/telegramAuth', async function(req, res) {
+    const query = req.query;
 
-    let data_check_arr = [];
+    const data_check_arr = [];
 
-    for (let key in query) {
+    for (const key in query) {
       if (key == 'hash') continue;
       data_check_arr.push(key + '=' + query[key]);
     }
 
     data_check_arr.sort();
 
-    let data_check_string = data_check_arr.join("\n");
+    const data_check_string = data_check_arr.join('\n');
 
-    let secret_key = crypto.createHash('sha256').update(tgToken).digest();
-    let hmac = crypto.createHmac('sha256', secret_key).update(data_check_string).digest('hex');
+    const secret_key = crypto.createHash('sha256').update(tgToken).digest();
+    const hmac = crypto.createHmac('sha256', secret_key).update(data_check_string).digest('hex');
 
     if (hmac != query.hash || (Date.now() - query.auth_date * 1000) > 86400000) {
-      return res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" : "/");
+      return res.redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000/#' : '/');
     }
 
-    let user = {
+    const user = {
       id: query.id,
-      username: query.first_name + " " + query.last_name,
+      username: query.first_name + ' ' + query.last_name,
       avatar: query.photo_url,
       platform: 1,
-    }
-    let stalkerToken = module.exports.createSession(user, false);
-    res.cookie("token", stalkerToken).redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000/#" + stalkerToken : "/");
+    };
+    const stalkerToken = module.exports.createSession(user, false);
+    res.cookie('token', stalkerToken).redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000/#' + stalkerToken : '/');
   });
 
-  app.get('/logout', async function (req, res) {
-    var token  = req.query?.token || req.cookies?.token;
-    if(token && sessions.has(token)) {
+  app.get('/logout', async function(req, res) {
+    const token = req.query?.token || req.cookies?.token;
+    if (token && sessions.has(token)) {
       sessions.delete(token);
     }
-    res.redirect(process.env.NODE_ENV == 'development' ? "http://localhost:3000" : "/");
+    res.redirect(process.env.NODE_ENV == 'development' ? 'http://localhost:3000' : '/');
   });
 
-  app.use(function (req, res, next) {
-    var token  = req.query?.token || req.cookies?.token;
-    if(token && sessions.has(token) && !sessions.get(token).isLink) {
+  app.use(function(req, res, next) {
+    const token = req.query?.token || req.cookies?.token;
+    if (token && sessions.has(token) && !sessions.get(token).isLink) {
       req.session = sessions.get(token);
       next();
-    } else {
+    }
+    else {
       res.status(401).json({
-        error: "E_BAD_SESSION_TOKEN",
-        message: "Session token invalid or missing",
+        error: 'E_BAD_SESSION_TOKEN',
+        message: 'Session token invalid or missing',
       });
     }
   });
@@ -168,14 +171,13 @@ module.exports.start = async function({ port, clientSecret }) {
 };
 
 module.exports.createSession = function(user, isLink) {
-  var stalkerToken = uuid.v4();
-  var session = {};
+  const stalkerToken = uuid.v4();
+  const session = {};
   sessions.set(stalkerToken, session);
   session.user = user;
   session.isLink = isLink;
   session.isAdmin = client.application.owner.members?.find(member => member.user.id == user.id) ? true : false;
-  if(isLink)
-    session.authBefore = Date.now() + 5 * 60 * 1000;
-  cli.ok(`Made ${isLink ? "auth link" : "session"} for ${user.username}@${(({ 0: "Discord", 1: "Telegram", 2: "Matrix"})[user.platform] ?? "Unknown")}`);
+  if (isLink) {session.authBefore = Date.now() + 5 * 60 * 1000;}
+  cli.ok(`Made ${isLink ? 'auth link' : 'session'} for ${user.username}@${(({ 0: 'Discord', 1: 'Telegram', 2: 'Matrix'})[user.platform] ?? 'Unknown')}`);
   return stalkerToken;
 };
