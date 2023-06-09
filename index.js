@@ -12,6 +12,8 @@ const {
   discordToken, apiPort, discordSecret, tgToken, mxHomeserver, mxToken,
 } = require('./config.json');
 
+var presenceID = 0;
+
 const { Telegraf, Markup } = require('telegraf');
 const tg = new Telegraf(tgToken);
 
@@ -68,15 +70,30 @@ for (const file of commandFiles) {
 client.once('ready', async () => {
   console.log('Ready as "' + client?.user?.username + '#' + client?.user?.discriminator + '"');
   const presenceUpdater = () => {
-    client.user.setPresence({
-      activities: [{
-        name: process.env.NODE_ENV == 'development' ? 'my code' : 'everyone',
-        type: 'WATCHING',
-      }],
-      status: 'online',
-    });
+    switch(presenceID) {
+      case 0:
+        client.user.setPresence({
+          activities: [{
+            name: process.env.NODE_ENV == 'development' ? 'my code' : 'everyone',
+            type: 'WATCHING',
+          }],
+          status: 'online',
+        });
+        presenceID += 1;
+        break;
+      case 1:
+        client.user.setPresence({
+          activities: [{
+            name: "WebUI => https://bakalari.smartyfeed.me",
+            type: 'PLAYING',
+          }],
+          status: 'online',
+        });
+        presenceID = 0;
+        break;
+    }
   };
-  setInterval(presenceUpdater, 60 * 60 * 1000);
+  setInterval(presenceUpdater, 30 * 60 * 1000);
   presenceUpdater();
 
   tg.launch();
