@@ -186,10 +186,10 @@ async function stalk() {
           await user.send({
             embeds: [lukMomIhaveEmbed],
           });
-          cli.ok(`Sent notification "${subscription.info.label}" to user ${user?.tag} ( <@${subscription.info.userID}> )`);
+          cli.ok(`Sent notification "${subscription.info.label}" to user ${user?.username} ( <@${subscription.info.userID}> )`);
         }
         catch (e) {
-          cli.error(`Sending notification to user ${user?.tag} ( <@${subscription.info.userID}> ) failed:
+          cli.error(`Sending notification to user ${user?.username} ( <@${subscription.info.userID}> ) failed:
         ${e.message}`);
         }
         break;
