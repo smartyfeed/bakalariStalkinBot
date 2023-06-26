@@ -1,4 +1,5 @@
 const db = require('../lib/dbpromise');
+const cli = require('cli');
 
 module.exports = async function(req, res) {
   const { user } = req.session;
@@ -39,6 +40,7 @@ module.exports = async function(req, res) {
     );
 
     if (!sub) {
+      cli.debug('Invalid subscription ID');
       return res.status(400).json({
         error: 'E_BAD_SUBSCRIPTION_ID',
         message: 'Provided subscription ID is not valid',
