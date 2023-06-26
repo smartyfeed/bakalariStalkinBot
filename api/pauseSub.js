@@ -1,12 +1,11 @@
 const db = require('../lib/dbpromise');
-const cli = require('cli');
 
 module.exports = async function(req, res) {
   const { user } = req.session;
   const date = new Date(req.body.until);
 
-  cli.debug(req.body);
-  cli.debug(date);
+  console.log(req.body);
+  console.log(date);
 
   if (req.body.unpause) {
     if (req.body.id == 'all') {
@@ -18,7 +17,7 @@ module.exports = async function(req, res) {
         [user.id, req.body.id, user.platform],
       );
 
-      cli.debug(sub);
+      console.log(sub);
 
       if (!sub) {
         return res.status(400).json({
@@ -44,7 +43,7 @@ module.exports = async function(req, res) {
       [user.id, req.body.id, user.platform],
     );
 
-    cli.debug(sub);
+    console.log(sub);
 
     if (!sub) {
       return res.status(400).json({
