@@ -5,6 +5,9 @@ module.exports = async function(req, res) {
   const { user } = req.session;
   const date = new Date(req.body.until);
 
+  cli.debug(req.body);
+  cli.debug(date);
+
   if (req.body.unpause) {
     if (req.body.id == 'all') {
       await db.run('UPDATE subscriptions SET pausedUntil = 0 WHERE userID = ? AND platform = ?', [user.id, user.platform]);
@@ -14,6 +17,8 @@ module.exports = async function(req, res) {
         'SELECT * FROM subscriptions WHERE userID = ? AND id = ? AND platform = ?',
         [user.id, req.body.id, user.platform],
       );
+
+      cli.debug(sub);
 
       if (!sub) {
         return res.status(400).json({
@@ -39,8 +44,9 @@ module.exports = async function(req, res) {
       [user.id, req.body.id, user.platform],
     );
 
+    cli.debug(sub);
+
     if (!sub) {
-      cli.debug('Invalid subscription ID');
       return res.status(400).json({
         error: 'E_BAD_SUBSCRIPTION_ID',
         message: 'Provided subscription ID is not valid',
