@@ -4,9 +4,6 @@ module.exports = async function(req, res) {
   const { user } = req.session;
   const date = new Date(req.body.until);
 
-  console.log(req.body);
-  console.log(date);
-
   if (req.body.unpause) {
     if (req.body.id == 'all') {
       await db.run('UPDATE subscriptions SET pausedUntil = 0 WHERE userID = ? AND platform = ?', [user.id, user.platform]);
@@ -16,8 +13,6 @@ module.exports = async function(req, res) {
         'SELECT * FROM subscriptions WHERE userID = ? AND id = ? AND platform = ?',
         [user.id, req.body.id, user.platform],
       );
-
-      console.log(sub);
 
       if (!sub) {
         return res.status(400).json({
@@ -42,8 +37,6 @@ module.exports = async function(req, res) {
       'SELECT * FROM subscriptions WHERE userID = ? AND id = ? AND platform = ?',
       [user.id, req.body.id, user.platform],
     );
-
-    console.log(sub);
 
     if (!sub) {
       return res.status(400).json({
